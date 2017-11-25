@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uddi__address__list>
+    <!--开发-->
+    <!--<uddi__address id="default">
+        <areaName>localserver</areaName>
+        <logicName>default</logicName>
+        <type>http</type>
+        <description></description>
+        <uddiHost>10.249.6.33</uddiHost>
+        <uddiPort>8080</uddiPort>
+        <uddiWebContext>bps</uddiWebContext>
+        <uddiUserID>bps</uddiUserID>
+        <uddiPassword>000000</uddiPassword>
+        <uddiAdminPort>6200</uddiAdminPort>
+    </uddi__address>-->
+    <!--<uddi__address id="default">
+        <name>normalServer</name>
+        <logicName>default</logicName>
+        <type>remote</type>
+        <uddiHost>114.251.172.66</uddiHost>
+        <uddiPort>80</uddiPort>
+        <uddiAdminPort>6200</uddiAdminPort>
+        <uddiWebContext>default</uddiWebContext>
+        <uddiUserID>bps</uddiUserID>
+        <uddiPassword>000000</uddiPassword>
+        <description>生产域配置</description>
+    </uddi__address>-->
+    <!--<uddi__address id="default">
+        <name>normalServer</name>
+        <logicName>default</logicName>
+        <type>remote</type>
+        <uddiHost>192.168.1.66</uddiHost>
+        <uddiPort>9080</uddiPort>
+        <uddiAdminPort>6200</uddiAdminPort>
+        <uddiWebContext>default</uddiWebContext>
+        <uddiUserID>bps</uddiUserID>
+        <uddiPassword>000000</uddiPassword>
+        <description>生产域配置</description>
+    </uddi__address>-->
+
+    <!--<uddi__address id="default">
+        <name>normalServer</name>
+        <logicName>default</logicName>
+        <type>remote</type>
+        <uddiHost>132.175.71.39</uddiHost>
+        <uddiPort>7016</uddiPort>
+        <uddiAdminPort>6200</uddiAdminPort>
+        <uddiWebContext>default</uddiWebContext>
+        <uddiUserID>bps</uddiUserID>
+        <uddiPassword>000000</uddiPassword>
+        <description>天津联通现场</description>
+    </uddi__address>-->
+
+    <!--<uddi__address id="default">-->
+        <!--<name>bps</name>-->
+        <!--<logicName>default</logicName>-->
+        <!--<type>remote</type>-->
+        <!--<uddiHost>10.249.6.40</uddiHost>-->
+        <!--&lt;!&ndash;<uddiHost>127.0.0.1</uddiHost>&ndash;&gt;-->
+        <!--<uddiPort>8180</uddiPort>-->
+        <!--<uddiAdminPort>6200</uddiAdminPort>-->
+        <!--<uddiWebContext>bps</uddiWebContext>-->
+        <!--<uddiUserID>bps</uddiUserID>-->
+        <!--<uddiPassword>000000</uddiPassword>-->
+        <!--<description>BPS6</description>-->
+    <!--</uddi__address>-->
+
+    <!--<uddi__address id="default">
+        <name>normalServer</name>
+        <logicName>default</logicName>
+        <type>remote</type>
+        <uddiHost>192.168.100.8</uddiHost>
+        <uddiPort>7016</uddiPort>
+        <uddiAdminPort>6200</uddiAdminPort>
+        <uddiWebContext>default</uddiWebContext>
+        <uddiUserID>bps</uddiUserID>
+        <uddiPassword>000000</uddiPassword>
+        <description>生产域配置</description>
+    </uddi__address>-->
+
+    <!--<uddi__address id="default">
+        <name>normalServer</name>
+        <logicName>default</logicName>
+        <type>remote</type>
+        <uddiHost>10.245.2.221</uddiHost>
+        <uddiPort>8081</uddiPort>
+        <uddiAdminPort>6200</uddiAdminPort>
+        <uddiWebContext>default</uddiWebContext>
+        <uddiUserID>bps</uddiUserID>
+        <uddiPassword>000000</uddiPassword>
+        <description>廊坊测试域配置</description>
+    </uddi__address>-->
+
+    <!--<uddi__address id="default">
+        <name>normalServer</name>
+        <logicName>default</logicName>
+        <type>remote</type>
+        <uddiHost>10.226.19.153</uddiHost>
+        <uddiPort>9082</uddiPort>
+        <uddiAdminPort>6200</uddiAdminPort>
+        <uddiWebContext>default</uddiWebContext>
+        <uddiUserID>bps</uddiUserID>
+        <uddiPassword>000000</uddiPassword>
+        <description>浪潮集团云服务配置</description>
+    </uddi__address>-->
+
+
+    <uddi__address id="default">
+        <areaName>localserver</areaName>
+        <logicName>default</logicName>
+        <type>http</type>
+        <description></description>
+        <uddiHost>192.168.111.22</uddiHost>
+        <uddiPort>8083</uddiPort>
+        <uddiWebContext>bps</uddiWebContext>
+        <uddiUserID>bps</uddiUserID>
+        <uddiPassword>000000</uddiPassword>
+        <uddiAdminPort>6200</uddiAdminPort>
+    </uddi__address>
+
+</uddi__address__list>
