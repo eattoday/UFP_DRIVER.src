@@ -187,6 +187,11 @@ public class WorkFlowController extends BaseController {
         //通过流程实例ID获取历史流程实例
         String hisSrc="http://10.147.180.41:9080/eoms3/LogonServlet?userName={usrName}&url=/eoms3/newCircuitTaskAction!getOrderLink.ilf?processInstID={processInstID}-{taskInstanceID}-0";
         TaskFilter taskFilter=new TaskFilter();
+        //设置分页参数
+        PageCondition pageCondition = new PageCondition();
+            pageCondition.setBegin(0);
+            pageCondition.setLength(100);
+        taskFilter.setPageCondition(pageCondition);
         taskFilter.setProcessInstID(processInstID);
         List<TaskInstance> list = WorkflowAdapter.getMyWaitingTasks(taskFilter, "");
         for (TaskInstance t:list){
@@ -196,18 +201,18 @@ public class WorkFlowController extends BaseController {
 
         //当前编辑的表单
         String nowSrc="http://10.147.180.41:9080/eoms3/LogonServlet?userName={usrName}&url=/eoms3/newCircuitTaskAction!getOrderLink.ilf?processInstID={processInstID}-{taskInstanceID}-1";
-        String now=hisSrc.replace("{usrName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}",taskInstanceId);
+        String now=nowSrc.replace("{usrName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}",taskInstanceId);
         srcList.add(now);
         String src = JSON.toJSONString(srcList);
 
         //测试表单
-//        List<String> test=new ArrayList<>();
+        List<String> test=new ArrayList<>();
 //        test.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
 //        test.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
 //        test.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
-//        test.add("http://10.147.180.41:9080/eoms3/LogonServlet?userName=admin&url=/eoms3/newCircuitTaskAction!getOrderLink.ilf?processInstID=36645-36662-1");
+//        test.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
 //        String testList=JSON.toJSONString(test);
-        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList",src);
+        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList",srcList);
     }
 
 
@@ -336,6 +341,7 @@ public class WorkFlowController extends BaseController {
         UserEntity userEntity = getUserEntity(request);
         if(userEntity!=null)
             accountId=userEntity.getUserName();
+
 
         try {
             TaskFilter taskFilter = new TaskFilter();

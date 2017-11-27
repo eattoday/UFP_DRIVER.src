@@ -28,34 +28,42 @@
             /*return '<tr><td colspan="2" style="padding-top:0px;">' + record.jobTitle + '</a></td><td colspan="2" style="padding-top:0px;text-align:right">' + record.activityInstName + '</td></tr>';
      */   },
         columns: [{
-            title: '任务ID',
-            column: 'taskInstID',
-            width: '120px',
+            title: '任务名',
+            column: 'jobTitle',
+            width: '16%',
             columnClass: 'text-center',
             highQuery: true,
             highQueryType: 'range'
         },{
-            title: '任务环节名称',
+            title: '工单编号',
+//            textAlign:"center",
+            column: '',
+            columnClass: 'text-center',
+            width: '16%',
+            wrapFunction: function (record, __data_value) {
+                return '<a style="text-decoration:underline" target="_blank" href="'
+                    +_PATH + '/workFlowController.do?method=getWaitingDesc' +
+                    '&processInstID=' +record.processInstID+
+                    '&accountId=' +'<%=accountId%>'+
+                    '&taskInstanceId=' + record.taskInstID +
+                    '">' + record.jobCode + '</a>';
+            },
+            highQuery: true,
+            highQueryType: 'lk'
+        },{
+            title: '流程模板名',
+//            textAlign:"center",
+            column: 'processModelName',
+            columnClass: 'text-center',
+            width: '16%',
+            highQuery: true,
+            highQueryType: 'lk'
+        },{
+            title: '当前节点',
 //            textAlign:"center",
             column: 'activityInstName',
             columnClass: 'text-center',
-            width: '20%',
-            highQuery: true,
-            highQueryType: 'lk'
-        },{
-            title: '流程模板ID',
-//            textAlign:"center",
-            column: 'processModelId',
-            columnClass: 'text-center',
-            width: '20%',
-            highQuery: true,
-            highQueryType: 'lk'
-        },{
-            title: '流程实例ID',
-//            textAlign:"center",
-            column: 'processInstID',
-            columnClass: 'text-center',
-            width: '20%',
+            width: '16%',
             highQuery: true,
             highQueryType: 'lk'
         },/*{
@@ -67,11 +75,11 @@
             highQuery: true,
             highQueryType: 'lk'
         },*/{
-            title: '到单时间',
+            title: '发起时间',
 //            textAlign:"center",
             column: 'createDate',
             columnClass: 'text-center',
-            width: '20%',
+            width: '16%',
             highQuery: true,
             highQueryType: 'lk'
         }/*,{
@@ -91,19 +99,11 @@
             highQuery: true,
             highQueryType: 'lk'
         }*/, {
-            title: '操作',
+            title: '发起人',
 //            textAlign:"center",
-            column: '',
+            column: 'strColumn5',
             columnClass: 'text-center',
-            width: '20%',
-            wrapFunction: function (record, __data_value) {
-                    return '<a style="text-decoration:underline" target="_blank" href="'
-                +_PATH + '/workFlowController.do?method=getWaitingDesc' +
-                '&processInstID=' +record.processInstID+
-                '&accountId=' +'<%=accountId%>'+
-                '&taskInstanceId=' + record.taskInstID +
-                '">' + record.jobID + '</a>';
-            },
+            width: '10%',
             highQuery: true,
             highQueryType: 'lk'
         }
