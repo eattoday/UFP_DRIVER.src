@@ -212,7 +212,7 @@ public class WorkFlowController extends BaseController {
 //        test.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
 //        test.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
 //        String testList=JSON.toJSONString(test);
-        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList",srcList);
+        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList",src);
     }
 
 
