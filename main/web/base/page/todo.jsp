@@ -8,9 +8,7 @@
     <title>待办列表</title>
     <%--<meta http-equiv="content-type" content="application/vnd.ms-excel;charset=UTF-8"/>--%>
     <link rel="stylesheet" type="text/css" href="<%=path%>/component/jquery-outFetterTable/jquery.outFetterTable.css"/>
-    <style>
 
-    </style>
 </head>
 <body>
 <div id="todoListContainer"></div>
@@ -23,17 +21,17 @@
 
     var __settings = {
         renderTo: 'todoListContainer',
-        loadURL: _PATH + '/workFlowController.do?method=getMyWaitingTasks&accountId=<%=accountId%>',
+        loadURL: _PATH + '/workFlowController.do?method=getWaitingTaskList&accountId=<%=accountId%>',
         extendRow: function (record) {
             /*return '<tr><td colspan="2" style="padding-top:0px;">' + record.jobTitle + '</a></td><td colspan="2" style="padding-top:0px;text-align:right">' + record.activityInstName + '</td></tr>';
      */   },
         columns: [{
-            title: '任务名',
+            title: '工单主题',
             column: 'jobTitle',
             width: '16%',
             columnClass: 'text-center',
-            highQuery: true,
-            highQueryType: 'range'
+//            highQuery: true,
+//            highQueryType: 'range'
         },{
             title: '工单编号',
 //            textAlign:"center",
@@ -41,15 +39,15 @@
             columnClass: 'text-center',
             width: '16%',
             wrapFunction: function (record, __data_value) {
-                return '<a style="text-decoration:underline" target="_blank" href="'
+                return '<a style="text-decoration:underline"  href="'
                     +_PATH + '/workFlowController.do?method=getWaitingDesc' +
                     '&processInstID=' +record.processInstID+
                     '&accountId=' +'<%=accountId%>'+
                     '&taskInstanceId=' + record.taskInstID +
                     '">' + record.jobCode + '</a>';
             },
-            highQuery: true,
-            highQueryType: 'lk'
+//            highQuery: true,
+//            highQueryType: 'lk'
         },{
             title: '流程模板名',
 //            textAlign:"center",
@@ -64,8 +62,8 @@
             column: 'activityInstName',
             columnClass: 'text-center',
             width: '16%',
-            highQuery: true,
-            highQueryType: 'lk'
+//            highQuery: true,
+//            highQueryType: 'lk'
         },/*{
             title: '流程启动者',
 //            textAlign:"center",
@@ -81,7 +79,7 @@
             columnClass: 'text-center',
             width: '16%',
             highQuery: true,
-            highQueryType: 'lk'
+            highQueryType: 'range'
         }/*,{
             title: '任务状态',
 //            textAlign:"center",
@@ -192,12 +190,13 @@
     function __load_out_fetter_data(__callback, __query_mode) {
         dtGridPager.startRecord = __curr_data_page_value++ * __page_size;
         dtGridPager.fastQueryKeyWord = $('#__quick_search_input').val();
-        dtGridPager.highQueryParameters.lk_jobCode = '';
-        dtGridPager.highQueryParameters.lk_jobTitle = '';
-        dtGridPager.highQueryParameters.ge_datColumn1 = '';
-        dtGridPager.highQueryParameters.le_datColumn1 = '';
+//        dtGridPager.highQueryParameters.lk_jobCode = '';
+//        dtGridPager.highQueryParameters.lk_jobTitle = '';
+//        dtGridPager.highQueryParameters.ge_datColumn1 = '';
+//        dtGridPager.highQueryParameters.le_datColumn1 = '';
         dtGridPager.highQueryParameters.ge_createDate = '';
         dtGridPager.highQueryParameters.le_createDate = '';
+        dtGridPager.highQueryParameters.lk_processModelName = '';
         $.ajax({
             url: __settings.loadURL,
             data: {dtGridPager: JsonObjectToString(dtGridPager),
