@@ -26,7 +26,10 @@ import com.metarnet.core.common.workflow.Participant;
 import com.metarnet.core.common.workflow.ProcessInstance;
 import com.metarnet.core.common.workflow.ProcessModelParams;
 import com.metarnet.core.common.workflow.TaskInstance;
+import com.metarnet.driver.model.ComponentFormEntity;
 import com.metarnet.driver.model.FlowNodeSettingEntity;
+import com.metarnet.driver.model.FlowNodeSettingTmpEntity;
+import com.metarnet.driver.service.IComponentFormService;
 import com.metarnet.driver.service.IFlowNodeSettingService;
 import com.ucloud.paas.proxy.aaaa.entity.UserEntity;
 import com.ucloud.paas.proxy.aaaa.util.PaasAAAAException;
@@ -57,6 +60,11 @@ public class WorkFlowController extends BaseController {
 
     @Resource
     private IFlowNodeSettingService flowNodeSettingService;
+    @Resource
+    private IWorkflowBaseService workflowBaseService;
+    @Resource
+    private IComponentFormService componentFormService;
+
 
     /**
      * 测试各种方法用的
@@ -64,42 +72,43 @@ public class WorkFlowController extends BaseController {
     @RequestMapping(value = "/workFlowController.do", params = "method=test")
     @ResponseBody
     public void test(HttpServletRequest request, HttpServletResponse response,
-                            String user,String taskInstId
+                     String user, String taskInstId
     ) throws AdapterException, UIException {
-        WorkflowAdapter4Activiti.deleteAssignee(taskInstId,user);
+        WorkflowAdapter4Activiti.deleteAssignee(taskInstId, user);
     }
+
     /**
      * 更改任务领取人,若为空则设置为空
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=deleteAssignee")
     @ResponseBody
     public void deleteAssignee(HttpServletRequest request, HttpServletResponse response,
-                            String user,String taskInstId
+                               String user, String taskInstId
     ) throws AdapterException, UIException {
-        WorkflowAdapter4Activiti.deleteAssignee(taskInstId,user);
+        WorkflowAdapter4Activiti.deleteAssignee(taskInstId, user);
     }
 
 
     /**
      * 根据流程id,流程名字和环节定义id获取动态表单属性
      */
-    @RequestMapping(value = "/workFlowController.do",params = "method=queryNodeSetting")
+    @RequestMapping(value = "/workFlowController.do", params = "method=queryNodeSetting")
     @ResponseBody
-    public  void  queryNodeSetting(HttpServletRequest request, HttpServletResponse response,
-                                   String processModelId,String processModelName,String activityDefID) throws AdapterException, UIException {
-        String json="";
+    public void queryNodeSetting(HttpServletRequest request, HttpServletResponse response,
+                                 String processModelId, String processModelName, String activityDefID) throws AdapterException, UIException {
+        String json = "";
         try {
             FlowNodeSettingEntity setting = new FlowNodeSettingEntity();
             setting.setActivityDefID(activityDefID);
             setting.setProcessModelId(processModelId);
             setting.setProcessModelName(processModelName);
-            FlowNodeSettingEntity queryNodeSettings=(FlowNodeSettingEntity) flowNodeSettingService.getSetting(setting);
-            json=JSON.toJSONString(queryNodeSettings);
-        }catch (Exception e){
+            FlowNodeSettingEntity queryNodeSettings = (FlowNodeSettingEntity) flowNodeSettingService.getSetting(setting);
+            json = JSON.toJSONString(queryNodeSettings);
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        endHandle4activiti(request,response,json,"");
+        endHandle4activiti(request, response, json, "");
 
     }
 
@@ -137,19 +146,14 @@ public class WorkFlowController extends BaseController {
     }
 
 
-
-
-    @Resource
-    private IWorkflowBaseService workflowBaseService;
-
     /**
-     *  记录通用处理信息
+     * 记录通用处理信息
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=saveGeneralInfo")
     @ResponseBody
     public void saveGeneralInfo(HttpServletRequest request, HttpServletResponse response,
-                             String accountId, String taskInstanceID,
-                             String tenantId, String formId, String formDataId, String formType) throws AdapterException, UIException {
+                                String accountId, String taskInstanceID,
+                                String tenantId, String formId, String formDataId, String formType) throws AdapterException, UIException {
 
         try {
             //通过任务实例ID查询任务实例
@@ -168,11 +172,10 @@ public class WorkFlowController extends BaseController {
             generalInfoModel.setTenantId(tenantId);
             generalInfoModel.setFormType(formType);
             workflowBaseService.saveGeneralInfo(generalInfoModel, taskInstance, userEntity);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
 
     /**
@@ -196,7 +199,7 @@ public class WorkFlowController extends BaseController {
 //            userEntity.setUserName(accountId);
 //        }
 //        System.out.println(userEntity.getUserName());
-        return new ModelAndView(new InternalResourceView("base/page/todo.jsp")).addObject("accountId",accountId);
+        return new ModelAndView(new InternalResourceView("base/page/todo.jsp")).addObject("accountId", accountId);
     }
 
 
@@ -206,55 +209,165 @@ public class WorkFlowController extends BaseController {
     @RequestMapping(value = "/workFlowController.do", params = "method=getWaitingDesc")
     @ResponseBody
     public ModelAndView getWaitingDesc(HttpServletRequest request, HttpServletResponse response,
-                                       String processInstID,String taskInstanceId,String accountId
-    ) throws AdapterException, UIException, IOException, ServletException {
-
+                                       String processInstID, String taskInstanceId, String accountId
+    ) throws AdapterException, UIException, IOException, ServletException, Exception {
         UserEntity userEntity = getUserEntity(request);
-        if(userEntity!=null)
-            accountId=userEntity.getUserName();
+        if (userEntity != null)
+            accountId = userEntity.getUserName();
 
-        List<String> srcList=new ArrayList<>();
-        //查询第一张表
-        String firstSrc="http://10.147.180.41:9080/eoms3/LogonServlet?userName={usrName}&url=/eoms3/newCircuitTaskAction!getDetail.ilf?processInstID={processInstID}";
-        String first = firstSrc.replace("{usrName}", accountId).replace("{processInstID}", processInstID);
-        srcList.add(first);
+        List<String> srcList = new ArrayList<>();
+        List<String> hisActivityList = new ArrayList<>();
+
+        //获取所有的用户表单
+//        Pager pager4Form=new Pager();
+//            pager4Form.setPageSize(1000);
+//            pager4Form.setStartRecord(0);
+//        Pager pager = componentFormService.queryByPager(new ComponentFormEntity(), pager4Form);
+//        List<ComponentFormEntity> componentFormEntityList = pager.getExhibitDatas();
 
         //通过流程实例ID获取历史流程实例
-        String hisSrc="http://10.147.180.41:9080/eoms3/LogonServlet?userName={usrName}&url=/eoms3/newCircuitTaskAction!getOrderLink.ilf?processInstID={processInstID}-{taskInstanceID}-0";
-        TaskFilter taskFilter=new TaskFilter();
+        TaskFilter taskFilter = new TaskFilter();
         //设置分页参数
         PageCondition pageCondition = new PageCondition();
-            pageCondition.setBegin(0);
-            pageCondition.setLength(100);
+        pageCondition.setBegin(0);
+        pageCondition.setLength(100);
         taskFilter.setPageCondition(pageCondition);
         taskFilter.setProcessInstID(processInstID);
+        //获取任务实例集合(倒序).0为待办任务,最后为工单详情
         List<TaskInstance> list = WorkflowAdapter.getMyCompletedTasks(taskFilter, "");
-        if (list!=null&&list.size()>1) {
-            for (int i=list.size()-2;i>=0;i--) {
-                String hisSrcCopy=hisSrc;
-                String his = hisSrcCopy.replace("{usrName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", list.get(i).getTaskInstID());
-                srcList.add(his);
+        if (list != null && list.size() > 1) {
+            for (int i = list.size() - 1; i >= 0; i--) {
+
+                //i=list.size()-1时,则为工单详情
+                if (i == list.size() - 1) {
+                    String first = "";
+                    //获取任务实例
+                    TaskInstance t = list.get(i);
+                    //设置查询环节信息所需要的属性
+                    FlowNodeSettingTmpEntity setting = new FlowNodeSettingTmpEntity();
+                    setting.setActivityDefID(t.getActivityDefID());
+                    setting.setProcessModelName(t.getProcessModelName());
+                    //查询环节信息
+                    FlowNodeSettingTmpEntity queryNodeSettings = (FlowNodeSettingTmpEntity) flowNodeSettingService.getSetting(setting);
+                    if (queryNodeSettings != null) {
+                        //查询表单类型,如果为4则是自行开发表单
+                        Integer formType = queryNodeSettings.getFormType();
+                        if (formType == 4) {
+                            //通过环节信息查询个人表单信息
+                            String componentID = queryNodeSettings.getComponentID();
+                            ComponentFormEntity componentFormEntitySql = new ComponentFormEntity();
+                            componentFormEntitySql.setId(Long.parseLong(componentID));
+                            ComponentFormEntity formEntity = (ComponentFormEntity) componentFormService.findById(componentFormEntitySql);
+                            if (formEntity != null) {
+                                //通过表单信息获取表单地址
+                                //show为emos的工单详情
+                                String pcShowURL = formEntity.getPcShowURL();
+                                if(pcShowURL==null)
+                                    pcShowURL="";
+                                //获取工单详情页面的地址
+                                first = pcShowURL.replace("{userName}", accountId).replace("{processInstID}", processInstID);
+                            }
+                        }
+                    }
+                    if(first==null||"".equals(first))
+                        first="base/page/pageIsNull.jsp";
+                    srcList.add(first);
+                    continue;
+                }
+
+                //i=0时,为待办工单
+                if (i == 0) {
+                    String now = "";
+                    //获取任务实例
+                    TaskInstance t = list.get(i);
+                    //设置查询环节信息所需要的属性
+                    FlowNodeSettingTmpEntity setting = new FlowNodeSettingTmpEntity();
+                    setting.setActivityDefID(t.getActivityDefID());
+                    setting.setProcessModelName(t.getProcessModelName());
+                    //查询环节信息
+                    FlowNodeSettingTmpEntity queryNodeSettings = (FlowNodeSettingTmpEntity) flowNodeSettingService.getSetting(setting);
+                    if (queryNodeSettings != null) {
+                        //查询表单类型,如果为4则是自行开发表单
+                        Integer formType = queryNodeSettings.getFormType();
+                        if (formType == 4) {
+                            //通过环节信息查询个人表单信息
+                            String componentID = queryNodeSettings.getComponentID();
+                            ComponentFormEntity componentFormEntitySql = new ComponentFormEntity();
+                            componentFormEntitySql.setId(Long.parseLong(componentID));
+                            ComponentFormEntity formEntity = (ComponentFormEntity) componentFormService.findById(componentFormEntitySql);
+                            if (formEntity != null) {
+                                //通过表单信息获取表单地址
+                                //edit为待办和历史的地址
+                                String editURL = formEntity.getPcEditURL();
+                                if (editURL==null)
+                                    editURL="";
+                                //获取待办工单的地址
+                                now = editURL.replace("{userName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", taskInstanceId).replace("{isCurrent}", "1");
+                            }
+                        }
+                    }
+                    if(now==null||"".equals(now))
+                        now="base/page/pageIsNull.jsp";
+                    srcList.add(now);
+                    continue;
+                }
+
+                //中间均为历史环节
+
+                String history="";
+                //获取任务实例
+                TaskInstance t = list.get(i);
+                //设置查询环节信息所需要的属性
+                FlowNodeSettingTmpEntity setting = new FlowNodeSettingTmpEntity();
+                setting.setActivityDefID(t.getActivityDefID());
+                setting.setProcessModelName(t.getProcessModelName());
+                //查询环节信息
+                FlowNodeSettingTmpEntity queryNodeSettings = (FlowNodeSettingTmpEntity) flowNodeSettingService.getSetting(setting);
+                if (queryNodeSettings != null) {
+                    //查询表单类型,如果为4则是自行开发表单
+                    Integer formType = queryNodeSettings.getFormType();
+                    if (formType == 4) {
+                        String componentID = queryNodeSettings.getComponentID();
+
+                        //通过环节信息查询个人表单信息
+                        ComponentFormEntity componentFormEntitySql = new ComponentFormEntity();
+                        componentFormEntitySql.setId(Long.parseLong(componentID));
+                        ComponentFormEntity formEntity = (ComponentFormEntity) componentFormService.findById(componentFormEntitySql);
+                        if (formEntity != null) {
+                            //通过表单信息获取表单地址
+                            //edit为待办和历史的地址
+                            String editURL = formEntity.getPcEditURL();
+                            if (editURL==null)
+                                editURL="";
+                            //获取待办工单的地址
+                            history = editURL.replace("{userName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", taskInstanceId).replace("{isCurrent}", "0");
+                        }
+                    }
+                }
+                if(history==null||"".equals(history))
+                    history="base/page/pageIsNull.jsp";
+                srcList.add(history);
+
+                //添加环节名称
+                hisActivityList.add(t.getActivityInstName());
             }
         }
-        //当前编辑的表单
-        String nowSrc="http://10.147.180.41:9080/eoms3/LogonServlet?userName={usrName}&url=/eoms3/newCircuitTaskAction!getOrderLink.ilf?processInstID={processInstID}-{taskInstanceID}-1";
-        String now=nowSrc.replace("{usrName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}",taskInstanceId);
-        srcList.add(now);
         String src = JSON.toJSONString(srcList);
-
+        String hisActivity = JSON.toJSONString(hisActivityList);
         //测试表单
-        List<String> testList=new ArrayList<>();
-        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
-        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
-        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
-        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
-//        testList.add("http://www.baidu.com");
-        String test=JSON.toJSONString(testList);
-        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList",src);
+//        List<String> testList=new ArrayList<>();
+//        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
+//        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
+//        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
+//        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
+//        String test=JSON.toJSONString(testList);
+
+        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList", src).addObject("hisActivity", hisActivity);
     }
 
     /**
-     * 2.1新待办列表查询
+     * 2--------新待办列表查询-----------
+     *
      * @param request
      * @param response
      * @param accountId
@@ -269,21 +382,21 @@ public class WorkFlowController extends BaseController {
     public void getWaitingTaskList(HttpServletRequest request, HttpServletResponse response,
                                    String accountId, String startRecord, String pageSize,
                                    String processInstID, String processModelName,
-                                   String createdBefore ,String createdAfter,String jobCode, String tenantId) throws AdapterException, UIException {
+                                   String createdBefore, String createdAfter, String jobCode, String tenantId) throws AdapterException, UIException {
         String json = "";
         String dtGridPager = request.getParameter("dtGridPager");
-        if(dtGridPager!=null) {
+        if (dtGridPager != null) {
             JSONObject gridPager = JSONObject.parseObject(dtGridPager);
-            pageSize=gridPager.getString("pageSize");
-            startRecord=gridPager.getString("startRecord");
+            pageSize = gridPager.getString("pageSize");
+            startRecord = gridPager.getString("startRecord");
             JSONObject highQueryParameters = gridPager.getJSONObject("highQueryParameters");
-            if(highQueryParameters!=null){
+            if (highQueryParameters != null) {
                 //流程模板名
-                processModelName=highQueryParameters.getString("lk_processModelName");
+                processModelName = highQueryParameters.getString("lk_processModelName");
                 //在时间之前
-                createdBefore=highQueryParameters.getString("ge_jobTitle");
+                createdBefore = highQueryParameters.getString("ge_jobTitle");
                 //在时间之后
-                createdAfter=highQueryParameters.getString("le_jobTitle");
+                createdAfter = highQueryParameters.getString("le_jobTitle");
 //                        //工单编号
 //                        highQueryParameters.getString("lk_");
 //                        //当前节点
@@ -296,8 +409,8 @@ public class WorkFlowController extends BaseController {
             System.out.println(dtGridPager);
         }
         UserEntity userEntity = getUserEntity(request);
-        if(userEntity!=null)
-            accountId=userEntity.getUserName();
+        if (userEntity != null)
+            accountId = userEntity.getUserName();
 
         try {
             TaskFilter taskFilter = new TaskFilter();
@@ -322,7 +435,7 @@ public class WorkFlowController extends BaseController {
             taskFilter.setPageCondition(pageCondition);
 
             //查询待办任务集合
-           Pager pager = WorkflowAdapter4Activiti.getWaitingTaskList(taskFilter, accountId,createdBefore,createdAfter);
+            Pager pager = WorkflowAdapter4Activiti.getWaitingTaskList(taskFilter, accountId, createdBefore, createdAfter);
 
             //设置是否成功
             pager.setIsSuccess(true);
@@ -340,7 +453,7 @@ public class WorkFlowController extends BaseController {
     /**
      * * 1.启动流程
      * 获取表单数据并提交第一步任务
-     *  ID均为ID,不是Id
+     * ID均为ID,不是Id
      *
      * @param accountId          用户ID    必须
      * @param participants       候选人列表   必须    List<String>
@@ -348,11 +461,10 @@ public class WorkFlowController extends BaseController {
      * @param processModelParams 流程模板参数  非必须 Map<String, Object>
      * @param bizModleParam      业务参数    非必须 Map<String, Object>
      * @param tenantId           租户ID    非必须
-     * @param nextStep         流程下一步  非必须
-    //     * @param formId             表单ID    非必须
-    //     * @param formDataId         表单数据ID  非必须
-//     * @param formType           表单类型    非必须
-     *
+     * @param nextStep           流程下一步  非必须
+     *                           //     * @param formId             表单ID    非必须
+     *                           //     * @param formDataId         表单数据ID  非必须
+     *                           //     * @param formType           表单类型    非必须
      * @return processInstID    流程实例ID
      */
 
@@ -438,11 +550,10 @@ public class WorkFlowController extends BaseController {
      * @param pageSize      分页参数,每页条数   非必须
      * @param processInstID 流程实例ID 非必须
      * @param tenantId      租户ID 非必须
-     *
      * @return Pager pager  exhibitDatas:List<TaskInstance>
-     *                      isSuccess:true
-     *                      pageSize:10
-     *                      startRecord:0
+     * isSuccess:true
+     * pageSize:10
+     * startRecord:0
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=getMyWaitingTasks")
     @ResponseBody
@@ -453,15 +564,15 @@ public class WorkFlowController extends BaseController {
         String json = "";
         String dtGridPager = request.getParameter("dtGridPager");
 
-        if(dtGridPager!=null) {
+        if (dtGridPager != null) {
             JSONObject gridPager = JSONObject.parseObject(dtGridPager);
-            pageSize=gridPager.getString("pageSize");
-            startRecord=gridPager.getString("startRecord");
+            pageSize = gridPager.getString("pageSize");
+            startRecord = gridPager.getString("startRecord");
         }
 
         UserEntity userEntity = getUserEntity(request);
-        if(userEntity!=null)
-            accountId=userEntity.getUserName();
+        if (userEntity != null)
+            accountId = userEntity.getUserName();
 
 
         try {
@@ -740,7 +851,7 @@ public class WorkFlowController extends BaseController {
 
         try {
 
-            List<TaskInstance> taskInstancesByActivityID = WorkflowAdapter.getTaskInstancesByActivityID(accountId,activityInstID);
+            List<TaskInstance> taskInstancesByActivityID = WorkflowAdapter.getTaskInstancesByActivityID(accountId, activityInstID);
 
             Pager pager = new Pager();
             pager.setExhibitDatas(taskInstancesByActivityID);
@@ -765,10 +876,9 @@ public class WorkFlowController extends BaseController {
      * @param accountId      用户ID    必须
      * @param tenantId       租户ID    必须
      * @param nextStep       下一步流程    必须
-//     * @param formId         表单ID    必须
-//     * @param formDataId     表单数据ID  必须
-//     * @param formType       表单类型    必须
-     *
+     *                       //     * @param formId         表单ID    必须
+     *                       //     * @param formDataId     表单数据ID  必须
+     *                       //     * @param formType       表单类型    必须
      * @return result  反馈结果    true/false
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=submitTask")
@@ -912,7 +1022,7 @@ public class WorkFlowController extends BaseController {
             //将转办后执行人ID放入候选人对象集合
             List<String> participantList = JSONArray.parseArray(participantID, String.class);
             List<Participant> participants = new ArrayList<>();
-            for(String p:participantList){
+            for (String p : participantList) {
                 Participant participant = new Participant();
                 participant.setParticipantID(p);
                 participants.add(participant);

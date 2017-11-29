@@ -66,11 +66,11 @@ public class FlowNodeSettingController extends BaseController {
                                    String processModelId,String processModelName,String activityDefID) throws AdapterException, UIException {
         String json="";
         try {
-            FlowNodeSettingEntity setting = new FlowNodeSettingEntity();
+            FlowNodeSettingTmpEntity setting = new FlowNodeSettingTmpEntity();
             setting.setActivityDefID(activityDefID);
             setting.setProcessModelId(processModelId);
             setting.setProcessModelName(processModelName);
-            FlowNodeSettingEntity queryNodeSettings=(FlowNodeSettingEntity) flowNodeSettingService.getSetting(setting);
+            FlowNodeSettingTmpEntity queryNodeSettings=(FlowNodeSettingTmpEntity) flowNodeSettingService.getSetting(setting);
             json=JSON.toJSONString(queryNodeSettings);
         }catch (Exception e){
             e.printStackTrace();

@@ -16,7 +16,9 @@
 
 <%
     String srcList =(String) request.getAttribute("srcList");
-    List list=JSONObject.parseObject(srcList, List.class);
+    String hisActivity =(String) request.getAttribute("hisActivity");
+    List<String> list=JSONObject.parseObject(srcList, List.class);
+    List<String> hisActivityList=JSONObject.parseObject(hisActivity, List.class);
     if (list != null) {
 %>
 <div class="navbar">
@@ -31,15 +33,14 @@
 </div>
     <div id="his"  style="display: none;width: 100%">
 <%
-        for (int i=1;i<list.size()-1;i++) {
-            String show="";
-            show="历史工单-"+i;
-            if(list.size()==2||list.size()==1){
+        if(list.size()==2||list.size()==1){
 %>
-        暂无历史信息
+            暂无历史信息
 <%
-                break;
-            }
+        }else {
+            for (int i=1;i<list.size()-1;i++) {
+                String show="";
+                show=hisActivityList.get(i-1);
 %>
         <input type="button" value="<%=show%>" class="btn btn-mini"  style="text-align:left;width: 100%;line-height: 40px" onclick="button<%=i%>()">
         <br>
@@ -61,15 +62,15 @@
         }
     </script>
 
-<%  }}   %>
-
+<%
+            }
+        }
+    }
+%>
     </div>
 
-
-
-<iframe  id="frame" width="100%" scrolling="0" frameborder="0"  marginheight="0"
-         style="display: table;box-sizing: border-box" ></iframe>
-
+    <iframe  id="frame" width="100%" scrolling="0" frameborder="0"  marginheight="0"
+             style="display: table;box-sizing: border-box" ></iframe>
 
 <script>
     function button0() {
