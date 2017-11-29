@@ -18,19 +18,15 @@
     <table>
 
         <tr><input type="text" value="用户ID">
-            <input id="accountId" type="text" name="accountId" value="ght"><br></tr>
+            <input id="accountId" type="text" name="accountId" value="root"><br></tr>
         <tr><input type="text" value="候选人列表">
-            <input id="participants" type="text" name="participants" value="['ght']"><br></tr>
+            <input id="participants" type="text" name="participants" value="['root']"><br></tr>
         <tr><input type="text" value="流程模板ID">
-            <input id="processModelID" type="text" name="processModelID" value="demo-1"><br></tr>
+            <input id="processModelID" type="text" name="processModelID" value="baoxiao1.0"><br></tr>
         <tr><input type="text" value="租户ID">
             <input id="tenantId" type="text" name="tenantId" value="default"><br></tr>
-        <tr><input type="text" value="表单ID">
-            <input id="formId" type="text" name="formId" value="1111"><br></tr>
-        <tr><input type="text" value="表单数据ID">
-            <input id="formDataId" type="text" name="formDataId" value="111data"><br></tr>
-        <tr><input type="text" value="表单类型">
-            <input id="formType" type="text" name="formType" value="1"><br></tr>
+        <tr><input type="text" value="下一步">
+            <input id="formId" type="text" name="nextStep" value=""><br></tr>
 
 
     </table>
