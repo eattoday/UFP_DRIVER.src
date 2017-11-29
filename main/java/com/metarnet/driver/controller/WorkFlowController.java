@@ -67,6 +67,7 @@ public class WorkFlowController extends BaseController {
 
 
     /**
+     * 1.
      * 测试各种方法用的
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=test")
@@ -78,6 +79,7 @@ public class WorkFlowController extends BaseController {
     }
 
     /**
+     * 2.
      * 更改任务领取人,若为空则设置为空
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=deleteAssignee")
@@ -90,7 +92,9 @@ public class WorkFlowController extends BaseController {
 
 
     /**
+     * 3.
      * 根据流程id,流程名字和环节定义id获取动态表单属性
+     * 在flowNodeSettingController中已有的方法,拿到这个里面也可以用
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=queryNodeSetting")
     @ResponseBody
@@ -98,55 +102,55 @@ public class WorkFlowController extends BaseController {
                                  String processModelId, String processModelName, String activityDefID) throws AdapterException, UIException {
         String json = "";
         try {
-            FlowNodeSettingEntity setting = new FlowNodeSettingEntity();
+            FlowNodeSettingTmpEntity setting = new FlowNodeSettingTmpEntity();
             setting.setActivityDefID(activityDefID);
             setting.setProcessModelId(processModelId);
             setting.setProcessModelName(processModelName);
-            FlowNodeSettingEntity queryNodeSettings = (FlowNodeSettingEntity) flowNodeSettingService.getSetting(setting);
+            FlowNodeSettingTmpEntity queryNodeSettings = (FlowNodeSettingTmpEntity) flowNodeSettingService.getSetting(setting);
             json = JSON.toJSONString(queryNodeSettings);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         endHandle4activiti(request, response, json, "");
-
     }
 
     /**
+     * 4.
      * 获取表单
+     * 很简单的表单查询功能,基本无用,留个纪念
      */
-    @RequestMapping(value = "/workFlowController.do", params = "method=getTable")
-    @ResponseBody
-    public ModelAndView getTable(HttpServletRequest request, HttpServletResponse response,
-                                 String activityDefID, String processModelId
-    ) throws AdapterException, UIException, IOException, ServletException {
-
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<JSONObject> forEntity1 =
-                restTemplate.postForEntity("http://localhost:9087/UFP_DRIVER/flowNodeSettingController.do?method=queryNodeSetting&processModelId={?}&activityDefID={?}",
-                        null, JSONObject.class,
-                        processModelId, activityDefID);
-        JSONObject body = forEntity1.getBody();
-        Map<String, Object> relaDatas = JSONObject.parseObject(body.toJSONString());
-        String formID = relaDatas.get("formID").toString();
-        String tenantId = relaDatas.get("tenantId").toString();
-        return new ModelAndView(new InternalResourceView("/demoTaskSubmit.jsp")).addObject("formID", formID).addObject("tenantId", tenantId);
-    }
+//    @RequestMapping(value = "/workFlowController.do", params = "method=getTable")
+//    @ResponseBody
+//    public ModelAndView getTable(HttpServletRequest request, HttpServletResponse response,
+//                                 String activityDefID, String processModelId
+//    ) throws AdapterException, UIException, IOException, ServletException {
+//
+//        RestTemplate restTemplate = new RestTemplate();
+//        ResponseEntity<JSONObject> forEntity1 =
+//                restTemplate.postForEntity("http://localhost:9087/UFP_DRIVER/flowNodeSettingController.do?method=queryNodeSetting&processModelId={?}&activityDefID={?}",
+//                        null, JSONObject.class,
+//                        processModelId, activityDefID);
+//        JSONObject body = forEntity1.getBody();
+//        Map<String, Object> relaDatas = JSONObject.parseObject(body.toJSONString());
+//        String formID = relaDatas.get("formID").toString();
+//        String tenantId = relaDatas.get("tenantId").toString();
+//        return new ModelAndView(new InternalResourceView("/demoTaskSubmit.jsp")).addObject("formID", formID).addObject("tenantId", tenantId);
+//    }
 
     /**
-     * 获取流程列表
+     * 5.
+     * 获取流程模板列表
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=getModeLists")
     @ResponseBody
     public void getProcessModeLists(HttpServletRequest request, HttpServletResponse response) throws AdapterException, UIException {
-
         net.sf.json.JSONObject root = WorkflowAdapter4Activiti.getProcessModeLists("root");
         String json = JSONObject.toJSONString(root);
         endHandle4activiti(request, response, json, "");
     }
 
-
     /**
+     * 6.
      * 记录通用处理信息
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=saveGeneralInfo")
@@ -179,32 +183,24 @@ public class WorkFlowController extends BaseController {
 
 
     /**
+     * 7.
      * 待办列表
+     * 此方法只是用来给其他系统传递待办列表页面,并无太多逻辑
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=getWaitingList")
     @ResponseBody
     public ModelAndView getWaitingList(HttpServletRequest request, HttpServletResponse response,
                                        String accountId
     ) throws AdapterException, UIException, IOException, ServletException {
-
-        //通过用户Id查询userEntity
-//        UserEntity userEntity = new UserEntity();
-//        try {
-//            userEntity = AAAAAdapter.findUserByPortalAccountId(accountId);
-//        } catch (PaasAAAAException e) {
-//            e.printStackTrace();
-//        }
-//        if(userEntity==null){
-//            userEntity=new UserEntity();
-//            userEntity.setUserName(accountId);
-//        }
-//        System.out.println(userEntity.getUserName());
         return new ModelAndView(new InternalResourceView("base/page/todo.jsp")).addObject("accountId", accountId);
     }
 
 
     /**
+     * 8.
      * 待办详情
+     * 这个是重头戏,用来展示待办详情页面的
+     * 分为工单详情,待办工单和历史工单三个模块
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=getWaitingDesc")
     @ResponseBody
@@ -262,15 +258,15 @@ public class WorkFlowController extends BaseController {
                                 //通过表单信息获取表单地址
                                 //show为emos的工单详情
                                 String pcShowURL = formEntity.getPcShowURL();
-                                if(pcShowURL==null)
-                                    pcShowURL="";
+                                if (pcShowURL == null)
+                                    pcShowURL = "";
                                 //获取工单详情页面的地址
                                 first = pcShowURL.replace("{userName}", accountId).replace("{processInstID}", processInstID);
                             }
                         }
                     }
-                    if(first==null||"".equals(first))
-                        first="base/page/pageIsNull.jsp";
+                    if (first == null || "".equals(first))
+                        first = "base/page/pageIsNull.jsp";
                     srcList.add(first);
                     continue;
                 }
@@ -299,22 +295,21 @@ public class WorkFlowController extends BaseController {
                                 //通过表单信息获取表单地址
                                 //edit为待办和历史的地址
                                 String editURL = formEntity.getPcEditURL();
-                                if (editURL==null)
-                                    editURL="";
+                                if (editURL == null)
+                                    editURL = "";
                                 //获取待办工单的地址
                                 now = editURL.replace("{userName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", taskInstanceId).replace("{isCurrent}", "1");
                             }
                         }
                     }
-                    if(now==null||"".equals(now))
-                        now="base/page/pageIsNull.jsp";
+                    if (now == null || "".equals(now))
+                        now = "base/page/pageIsNull.jsp";
                     srcList.add(now);
                     continue;
                 }
 
                 //中间均为历史环节
-
-                String history="";
+                String history = "";
                 //获取任务实例
                 TaskInstance t = list.get(i);
                 //设置查询环节信息所需要的属性
@@ -337,15 +332,15 @@ public class WorkFlowController extends BaseController {
                             //通过表单信息获取表单地址
                             //edit为待办和历史的地址
                             String editURL = formEntity.getPcEditURL();
-                            if (editURL==null)
-                                editURL="";
+                            if (editURL == null)
+                                editURL = "";
                             //获取待办工单的地址
                             history = editURL.replace("{userName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", taskInstanceId).replace("{isCurrent}", "0");
                         }
                     }
                 }
-                if(history==null||"".equals(history))
-                    history="base/page/pageIsNull.jsp";
+                if (history == null || "".equals(history))
+                    history = "base/page/pageIsNull.jsp";
                 srcList.add(history);
 
                 //添加环节名称
@@ -354,7 +349,7 @@ public class WorkFlowController extends BaseController {
         }
         String src = JSON.toJSONString(srcList);
         String hisActivity = JSON.toJSONString(hisActivityList);
-        //测试表单
+        //测试表单,用来在前期无表单数据时进行页面测试,也是留作纪念的
 //        List<String> testList=new ArrayList<>();
 //        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
 //        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
@@ -366,7 +361,9 @@ public class WorkFlowController extends BaseController {
     }
 
     /**
-     * 2--------新待办列表查询-----------
+     * 9.新待办查询
+     * 用来查询待办任务列表
+     * 主要是可以进行搜索查询和总数显示
      *
      * @param request
      * @param response
@@ -453,7 +450,6 @@ public class WorkFlowController extends BaseController {
     /**
      * * 1.启动流程
      * 获取表单数据并提交第一步任务
-     * ID均为ID,不是Id
      *
      * @param accountId          用户ID    必须
      * @param participants       候选人列表   必须    List<String>
@@ -683,7 +679,9 @@ public class WorkFlowController extends BaseController {
 //    }
 
     /**
-     * 4.查询已办
+     * 3.查询已办
+     * 返回所有已办任务
+     * 如果不传入用户,只传入流程实例id的话,则会包括该流程的未完成的任务!!!!
      *
      * @param accountId     用户ID 非必须
      * @param startRecord   分页参数,开始记录   非必须
@@ -740,8 +738,11 @@ public class WorkFlowController extends BaseController {
     }
 
     /**
-     * 5.查询已办
+     * 4.查询已办
      * 基于同一用户的合并
+     *  我觉得并无大用,和上面的方法重复了,
+     *  只不过是可以通过pager传递一个总数量,
+     *  过段时间我可以把上面的方法也同样实现出来
      *
      * @param startRecord 分页参数,开始记录   非必须
      * @param pageSize    分页参数,每页条数   非必须
@@ -753,49 +754,49 @@ public class WorkFlowController extends BaseController {
      * startRecord:0
      * RecordCount:记录总数
      */
-    @RequestMapping(value = "/workFlowController.do", params = "method=getMyCompletedTasksDistinctJobId")
-    @ResponseBody
-    public void getMyCompletedTasksDistinctJobId(HttpServletRequest request, HttpServletResponse response,
-                                                 String startRecord, String pageSize,
-                                                 String accountId, String tenantId) throws AdapterException, UIException {
-
-        String json = "";
-
-        try {
-            //设置任务参数
-            TaskFilter taskFilter = new TaskFilter();
-            //设置分页参数
-            PageCondition pageCondition = new PageCondition();
-            if (startRecord != null & !"".equals(startRecord)) {
-                pageCondition.setBegin(Integer.parseInt(startRecord));
-            } else {
-                pageCondition.setBegin(0);
-            }
-            if (startRecord != null & !"".equals(pageSize)) {
-                pageCondition.setLength(Integer.parseInt(pageSize));
-            } else {
-                pageCondition.setLength(10);
-            }
-            taskFilter.setPageCondition(pageCondition);
-
-            Pager pager = WorkflowAdapter.getMyCompletedTasksDistinctJobId(taskFilter, accountId);
-
-            pager.setIsSuccess(true);
-            SerializeConfig ser = new SerializeConfig();
-            ser.put(Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
-            ser.put(java.sql.Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
-
-            json = JSON.toJSONString(pager, ser, SerializerFeature.WriteNullListAsEmpty);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        endHandle4activiti(request, response, json, "todo");
-    }
+//    @RequestMapping(value = "/workFlowController.do", params = "method=getMyCompletedTasksDistinctJobId")
+//    @ResponseBody
+//    public void getMyCompletedTasksDistinctJobId(HttpServletRequest request, HttpServletResponse response,
+//                                                 String startRecord, String pageSize,
+//                                                 String accountId, String tenantId) throws AdapterException, UIException {
+//
+//        String json = "";
+//
+//        try {
+//            //设置任务参数
+//            TaskFilter taskFilter = new TaskFilter();
+//            //设置分页参数
+//            PageCondition pageCondition = new PageCondition();
+//            if (startRecord != null & !"".equals(startRecord)) {
+//                pageCondition.setBegin(Integer.parseInt(startRecord));
+//            } else {
+//                pageCondition.setBegin(0);
+//            }
+//            if (startRecord != null & !"".equals(pageSize)) {
+//                pageCondition.setLength(Integer.parseInt(pageSize));
+//            } else {
+//                pageCondition.setLength(10);
+//            }
+//            taskFilter.setPageCondition(pageCondition);
+//
+//            Pager pager = WorkflowAdapter.getMyCompletedTasksDistinctJobId(taskFilter, accountId);
+//
+//            pager.setIsSuccess(true);
+//            SerializeConfig ser = new SerializeConfig();
+//            ser.put(Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+//            ser.put(java.sql.Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+//
+//            json = JSON.toJSONString(pager, ser, SerializerFeature.WriteNullListAsEmpty);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        endHandle4activiti(request, response, json, "todo");
+//    }
 
 
     /**
      *
-     * 6.查询已办
+     * 4.查询已办
      * --基于同于流程实例中相同处理人的已办合并
      *
      * @param request
@@ -834,7 +835,7 @@ public class WorkFlowController extends BaseController {
 //    }
 
     /**
-     * 7.根据活动实例ID获取任务实例ID
+     * 4.根据活动实例ID获取任务实例ID
      *
      * @param accountId      用户ID    非必须
      * @param activityInstID 活动实例ID  必须
@@ -846,11 +847,8 @@ public class WorkFlowController extends BaseController {
     @ResponseBody
     public void getTaskInstancesByActivityID(HttpServletRequest request, HttpServletResponse response,
                                              String accountId, String activityInstID, String tenantId) throws AdapterException, UIException {
-
         String json = "";
-
         try {
-
             List<TaskInstance> taskInstancesByActivityID = WorkflowAdapter.getTaskInstancesByActivityID(accountId, activityInstID);
 
             Pager pager = new Pager();
@@ -869,7 +867,7 @@ public class WorkFlowController extends BaseController {
     }
 
     /**
-     * 8.提交待办
+     * 5.提交待办
      *
      * @param taskInstanceID 任务实例ID  必须
      * @param participants   候选人列表   必须  ["aa","bb"]
@@ -916,7 +914,7 @@ public class WorkFlowController extends BaseController {
 
 
     /**
-     * 9.设置相关数据
+     * 6.设置相关数据
      *
      * @param processInstID 流程实例ID  必须
      * @param relaData      相关数据    必须  {"aa":"bb","cc":"dd","list":["ee","ff"]}
@@ -943,7 +941,7 @@ public class WorkFlowController extends BaseController {
     }
 
     /**
-     * 10.获取相关数据
+     * 7.获取相关数据
      *
      * @param processInstID 流程实例ID  必须
      * @param keys          查找的数据的key键   必须   ["aa","bb"]
@@ -969,7 +967,7 @@ public class WorkFlowController extends BaseController {
 
 
     /**
-     * 12.获取流程实例流转过的活动
+     * 8.获取流程实例流转过的活动
      * 若流程未结束,则数据集合的最后一个元素是当前待办
      *
      * @param accountId     用户ID    非必须
@@ -1005,8 +1003,9 @@ public class WorkFlowController extends BaseController {
 
 
     /**
-     * 13.转办
-     * 14.协办
+     * 9.增加候选人-转办-协办
+     * 若传递accountId的值,则会删除accountId的候选资格
+     * 可以传递List集合的json形式的候选人集合 进行批量增加
      *
      * @param accountId      用户ID
      * @param taskInstanceId 任务实例ID
@@ -1038,7 +1037,7 @@ public class WorkFlowController extends BaseController {
     }
 
     /**
-     * 19.根据流程实例ID获取流程对象
+     * 10.根据流程实例ID获取流程对象
      *
      * @param accountId     用户ID    非必须
      * @param processInstID 流程实例ID  必须
@@ -1069,7 +1068,7 @@ public class WorkFlowController extends BaseController {
     }
 
     /**
-     * 21.获取流程实例的子流程
+     * 11.获取流程实例的子流程
      *
      * @param accountId     用户ID    非必须
      * @param processInstID 流程实例ID  必须
@@ -1101,7 +1100,7 @@ public class WorkFlowController extends BaseController {
 
 
     /**
-     * 24.根据传入的processParameter 分解组装processParameter对象集合
+     * 11.根据传入的processParameter 分解组装processParameter对象集合
      *
      * @param areacode    区域名称
      * @param orgcode     组织名称
@@ -1128,7 +1127,7 @@ public class WorkFlowController extends BaseController {
 //    }
 
     /**
-     * 16.业务描述：撤回任务，在对方没有提交之前进行撤回
+     * 11.业务描述：撤回任务，在对方没有提交之前进行撤回
      *
      * @param currentActivityInstId 当前活动实例ID
      * @param targetActivityInstId  需要回退/取回的目标活动实例ID
@@ -1154,7 +1153,7 @@ public class WorkFlowController extends BaseController {
 //    }
 
     /**
-     * 34.回退到指定的步骤
+     * 11.回退到指定的步骤
      *
      * @param processId             当前流程id
      * @param currentActivityInstId 当前活动实例id
@@ -1180,7 +1179,7 @@ public class WorkFlowController extends BaseController {
 //    }
 
     /**
-     * 44.获取根流程实例id
+     * 12.获取根流程实例id
      *
      * @param accountId         用户ID    非必须
      * @param processInstanceId 流程实例ID  必须
@@ -1211,7 +1210,7 @@ public class WorkFlowController extends BaseController {
 
 
     /**
-     * 51.	根据业务主键jobID获取当前待办参数
+     * 13.	根据业务主键jobID获取当前待办参数
      *
      * @param accountId 用户ID    非必须
      * @param jobId     业务主键ID  必须
@@ -1242,7 +1241,7 @@ public class WorkFlowController extends BaseController {
     }
 
     /**
-     * 52.根据业务主键获取活动
+     * 13.根据业务主键获取活动
      *
      */
     //todo 这个方法有问题,底层方法应该是错的
@@ -1261,7 +1260,7 @@ public class WorkFlowController extends BaseController {
 
 
     /**
-     * 22.根据任务实例ID获取任务实例对象
+     * 14.根据任务实例ID获取任务实例对象
      *
      * @param accountId
      * @param taskInstId
@@ -1301,7 +1300,7 @@ public class WorkFlowController extends BaseController {
 
 
     /**
-     * 49.获取下一个参与者
+     * 15.获取下一个参与者
      *
      *
      * @param request
@@ -1338,7 +1337,7 @@ public class WorkFlowController extends BaseController {
 
 
     /**
-     * 50.获取XXX参与者
+     * 15.获取XXX参与者
      *
      * @param request
      * @param response
@@ -1375,6 +1374,7 @@ public class WorkFlowController extends BaseController {
 
     /**
      * 获取分页信息
+     * 这个方法是工具,目前没有用到,后面如果需要整合就用
      */
     private TaskFilter setPageCodition(TaskFilter taskFilter, HttpServletRequest request) {
         String dtGridPager = request.getParameter("dtGridPager");
