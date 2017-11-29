@@ -5,8 +5,10 @@
 <%@ page import="com.alibaba.fastjson.JSONObject" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ include file="/base/basePage.jsp" %>
-
+<%
+    String path = request.getContextPath();
+%>
+<link rel="stylesheet" type="text/css" href="<%=path%>/base/_css/bootstrap.css"/>
 <head>
     <title >任务详情</title>
 </head>
@@ -21,9 +23,9 @@
     <div class="navbar-inner">
         <a class="brand" href="#">任务详情</a>
         <ul class="nav nav-tabs">
-            <li><a onclick="button0()">工单详情</a></li>
-            <li><a  onclick="his()">历史工单</a></li>
-            <li><a onclick="button<%=list.size()-1%>()">当前环节</a></li>
+            <li id="first" ><a onclick="button0()" style="cursor: pointer">工单详情</a></li>
+            <li id="history" ><a  onclick="his()" style="cursor: pointer">历史工单</a></li>
+            <li id="now" ><a onclick="button<%=list.size()-1%>()" style="cursor: pointer">当前环节</a></li>
         </ul>
     </div>
 </div>
@@ -32,21 +34,29 @@
         for (int i=1;i<list.size()-1;i++) {
             String show="";
             show="历史工单-"+i;
+            if(list.size()==2||list.size()==1){
 %>
-        <input type="button" value="<%=show%>" class="btn btn-mini"  style="text-align:left;width: 100%" onclick="button<%=i%>()">
+        暂无历史信息
+<%
+                break;
+            }
+%>
+        <input type="button" value="<%=show%>" class="btn btn-mini"  style="text-align:left;width: 100%;line-height: 40px" onclick="button<%=i%>()">
         <br>
+
         <iframe  id="frame<%=i%>"  width="100%" scrolling="0"
-                 frameborder="0"  marginheight="0" style="display: none"></iframe>
+                 frameborder="0"  marginheight="0" style="display: none;box-sizing: border-box"></iframe>
+
     <script>
         function button<%=i%>() {
             var iframe=document.getElementById("frame<%=i%>");
             iframe.setAttribute("src","<%=list.get(i)%>");
-            iframe.setAttribute("height",document.documentElement.clientHeight);
+            iframe.setAttribute("height",500);
 
-            if(iframe.getAttribute("style")=="display: none"){
-                iframe.setAttribute("style","display: table");
+            if(iframe.style.display=="none"){
+                iframe.style.display="table";
             }else {
-                iframe.setAttribute("style","display: none");
+                iframe.style.display="none";
             }
         }
     </script>
@@ -57,35 +67,49 @@
 
 
 
-<iframe  id="frame" width="100%" scrolling="0" frameborder="0"  marginheight="0" style="display: table"></iframe>
+<iframe  id="frame" width="100%" scrolling="0" frameborder="0"  marginheight="0"
+         style="display: table;box-sizing: border-box" ></iframe>
 
 
 <script>
     function button0() {
-        document.getElementById("his").setAttribute("style","display: none");
+        document.getElementById("now").setAttribute("class","");
+        document.getElementById("history").setAttribute("class","");
+        document.getElementById("first").setAttribute("class","active");
+
+        document.getElementById("his").style.display="none";
         var iframe=document.getElementById("frame");
-        iframe.setAttribute("style","display: table");
+        iframe.style.display="table";
         iframe.setAttribute("src","<%=list.get(0)%>");
-        iframe.setAttribute("height",document.documentElement.clientHeight);
+        iframe.setAttribute("height",document.documentElement.clientHeight-64);
     }
 
     function his() {
-        document.getElementById("his").setAttribute("style","display: table;width: 100%");
-        document.getElementById("frame").setAttribute("style","display: none");
+        document.getElementById("now").setAttribute("class","");
+        document.getElementById("history").setAttribute("class","active");
+        document.getElementById("first").setAttribute("class","");
+        document.getElementById("his").style.display="table";
+        document.getElementById("frame").style.display="none";
     }
     function button<%=list.size()-1%>() {
-        document.getElementById("his").setAttribute("style","display: none");
+        document.getElementById("now").setAttribute("class","active");
+        document.getElementById("history").setAttribute("class","");
+        document.getElementById("first").setAttribute("class","");
+
+        document.getElementById("his").style.display="none";
         var iframe=document.getElementById("frame");
-        iframe.setAttribute("style","display: table");
+        iframe.style.display="table";
         iframe.setAttribute("src","<%=list.get(list.size()-1)%>");
-        iframe.setAttribute("height",document.documentElement.clientHeight);
+//        iframe.setAttribute("height",document.documentElement.clientHeight-64);
     }
 
     function onload() {
+        document.getElementById("now").setAttribute("class","active");
         var iframe=document.getElementById("frame");
         iframe.setAttribute("src","<%=list.get(list.size()-1)%>");
-        iframe.setAttribute("height",document.documentElement.clientHeight);
+        iframe.height = document.documentElement.clientHeight-64;
     }
+
     window.onload = onload();
 </script>
 
