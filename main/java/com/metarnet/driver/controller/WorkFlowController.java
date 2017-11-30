@@ -298,7 +298,7 @@ public class WorkFlowController extends BaseController {
                                 if (editURL == null)
                                     editURL = "";
                                 //获取待办工单的地址
-                                now = editURL.replace("{userName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", taskInstanceId).replace("{isCurrent}", "1");
+                                now = editURL.replace("{userName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", t.getTaskInstID()).replace("{isCurrent}", "1");
                             }
                         }
                     }
@@ -335,7 +335,7 @@ public class WorkFlowController extends BaseController {
                             if (editURL == null)
                                 editURL = "";
                             //获取待办工单的地址
-                            history = editURL.replace("{userName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", taskInstanceId).replace("{isCurrent}", "0");
+                            history = editURL.replace("{userName}", accountId).replace("{processInstID}", processInstID).replace("{taskInstanceID}", t.getTaskInstID()).replace("{isCurrent}", "0");
                         }
                     }
                 }
@@ -403,7 +403,7 @@ public class WorkFlowController extends BaseController {
 //                        //发起人
 //                        highQueryParameters.getString("lk_strColumn5");
             }
-            System.out.println(dtGridPager);
+            System.out.println("control新待办查询:"+dtGridPager);
         }
         UserEntity userEntity = getUserEntity(request);
         if (userEntity != null)
