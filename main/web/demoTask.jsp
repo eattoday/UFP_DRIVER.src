@@ -41,7 +41,7 @@
                         "<a href=http://localhost:9087/UFP_DRIVER/workFlowController.do?method=getTable&activityDefID=" + dataList[i].activityDefID + "&processModelId=" + dataList[i].processModelId + ">" + "查询表单" + "</a>" +
                         "</td>" +
                         "<td >" +
-                        "<a href=http://localhost:9087/UFP_DRIVER/workFlowController.do?method=submitTask&participants=['root']&accountId=ght&taskInstanceID=" + dataList[i].taskInstID + ">" + "提交任务" + "</a>" +
+                        "<a href=http://localhost:9087/UFP_DRIVER/workFlowController.do?method=submitTask&participants=['root']&accountId=root&taskInstanceID=" + dataList[i].taskInstID + ">" + "提交任务" + "</a>" +
                         "</td>" +
                         "</tr>");
                 }

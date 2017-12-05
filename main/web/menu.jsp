@@ -21,6 +21,9 @@
                     <li><a href="base/page/todo_old.jsp" target="__menu_body" >待办</a></li>
                     <li><a href="base/page/todo.jsp" target="__menu_body" >待办xin</a></li>
                     <li><a href="base/page/cusDevFormList.jsp" target="__menu_body" >自定义表单</a></li>
+                    <li><a href="base/page/workFlowMonitor.jsp" target="__menu_body" >流程监控页面</a></li>
+                    <li><a href="base/page/workOrderMonitor.jsp" target="__menu_body" >我的流程监控页面</a></li>
+                    <li><a href="base/page/workOrderStart.jsp" target="__menu_body" >已发起工单查询</a></li>
                     <li><a href="base/page/already_old.jsp" target="__menu_body">已办</a></li>
                     <li><a href="base/page/already.jsp" target="__menu_body">已办xin</a></li>
                     <li><a href="base/page/flowButtonList.jsp" target="__menu_body">按钮列表</a></li>

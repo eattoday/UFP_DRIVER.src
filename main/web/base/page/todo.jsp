@@ -188,8 +188,8 @@
     });
 
     function __load_out_fetter_data(__callback, __query_mode) {
-        dtGridPager.startRecord = __curr_data_page_value++ * __page_size;
-        dtGridPager.fastQueryKeyWord = $('#__quick_search_input').val();
+//        dtGridPager.startRecord = __curr_data_page_value++ * __page_size;
+        dtGridPager.fastQueryKeyWord = '';
 //        dtGridPager.highQueryParameters.lk_jobCode = '';
 //        dtGridPager.highQueryParameters.lk_jobTitle = '';
 //        dtGridPager.highQueryParameters.ge_datColumn1 = '';
@@ -200,6 +200,7 @@
         $.ajax({
             url: __settings.loadURL,
             data: {dtGridPager: JsonObjectToString(dtGridPager),
+
                     "accountId":"<%=accountId%>"
             },
             contentType: "application/x-www-form-urlencoded; charset=utf-8",
