@@ -12,6 +12,7 @@ import com.metarnet.core.common.adapter.WorkflowAdapter4Activiti;
 import com.metarnet.core.common.adapter.WorkflowAdapter_bps;
 import com.metarnet.core.common.controller.BaseController;
 import com.metarnet.core.common.exception.AdapterException;
+import com.metarnet.core.common.exception.ServiceException;
 import com.metarnet.core.common.exception.UIException;
 import com.metarnet.core.common.model.GeneralInfoModel;
 import com.metarnet.core.common.model.Pager;
@@ -31,6 +32,7 @@ import com.metarnet.driver.model.FlowNodeSettingEntity;
 import com.metarnet.driver.model.FlowNodeSettingTmpEntity;
 import com.metarnet.driver.service.IComponentFormService;
 import com.metarnet.driver.service.IFlowNodeSettingService;
+import com.metarnet.workflow.utils.SmsDuanxinServer;
 import com.ucloud.paas.proxy.aaaa.entity.UserEntity;
 import com.ucloud.paas.proxy.aaaa.util.PaasAAAAException;
 import com.unicom.ucloud.workflow.objects.*;
@@ -117,7 +119,7 @@ public class WorkFlowController extends BaseController {
     /**
      * 4.
      * 获取表单
-     * 很简单的表单查询功能,基本无用,留个纪念
+     * todo 很简单的表单查询功能,基本无用,留个纪念
      */
 //    @RequestMapping(value = "/workFlowController.do", params = "method=getTable")
 //    @ResponseBody
@@ -171,14 +173,151 @@ public class WorkFlowController extends BaseController {
             }
             //记录通用处理信息
             GeneralInfoModel generalInfoModel = new GeneralInfoModel();
-            generalInfoModel.setFormDataId(formDataId);
-            generalInfoModel.setFormId(formId);
-            generalInfoModel.setTenantId(tenantId);
-            generalInfoModel.setFormType(formType);
+//            generalInfoModel.setFormDataId(formDataId);
+//            generalInfoModel.setFormId(formId);
+//            generalInfoModel.setTenantId(tenantId);
+//            generalInfoModel.setFormType(formType);
             workflowBaseService.saveGeneralInfo(generalInfoModel, taskInstance, userEntity);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 6.
+     * 获取通用处理信息
+     * 根据任务实例ID
+     */
+    @RequestMapping(value = "/workFlowController.do", params = "method=getGeneralInfo")
+    @ResponseBody
+    public void getGeneralInfo(HttpServletRequest request, HttpServletResponse response,
+                               String taskInstanceID) throws AdapterException, UIException {
+        String json = "";
+
+        try {
+            List<GeneralInfoModel> generaInfoList = workflowBaseService.getGeneraInfoList(taskInstanceID);
+            Pager pager = new Pager();
+            if (generaInfoList != null) {
+//               generaInfoList.get(0);
+                pager.setExhibitDatas(generaInfoList);
+                pager.setRecordCount(generaInfoList.size());
+            }
+            pager.setIsSuccess(true);
+            SerializeConfig ser = new SerializeConfig();
+            ser.put(Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+            json = JSON.toJSONString(pager, ser, SerializerFeature.WriteNullListAsEmpty);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        endHandle4activiti(request, response, json, "");
+    }
+
+    /**
+     * 6.
+     * 获取通用处理信息集合
+     * 根据流程实例ID,获取所有过往记录
+     */
+    @RequestMapping(value = "/workFlowController.do", params = "method=getGeneralInfoList")
+    @ResponseBody
+    public void getGeneralInfoList(HttpServletRequest request, HttpServletResponse response,
+                               String processInstID) throws AdapterException, UIException {
+        String json = "";
+
+        try {
+
+            //通过流程实例ID获取历史流程实例
+            TaskFilter taskFilter = new TaskFilter();
+            //设置分页参数
+            PageCondition pageCondition = new PageCondition();
+            pageCondition.setBegin(0);
+            pageCondition.setLength(100);
+            taskFilter.setPageCondition(pageCondition);
+            taskFilter.setProcessInstID(processInstID);
+            List<TaskInstance> taskInstanceList = WorkflowAdapter.getMyCompletedTasks(taskFilter, "");
+
+            Pager pager = new Pager();
+            List<GeneralInfoModel> generaInfoList=new ArrayList<>();
+            //通过历史流程实例id获取通用处理信息集合
+            for (int i=taskInstanceList.size()-1;i>=0;i--){
+                List<GeneralInfoModel> generaInfoListTemp = workflowBaseService.getGeneraInfoList(taskInstanceList.get(i).getTaskInstID());
+                if (generaInfoListTemp != null&&generaInfoListTemp.size()!=0) {
+                    generaInfoList.add(generaInfoListTemp.get(0));
+                }
+            }
+
+            pager.setExhibitDatas(generaInfoList);
+            pager.setRecordCount(generaInfoList.size());
+            pager.setIsSuccess(true);
+            SerializeConfig ser = new SerializeConfig();
+            ser.put(Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+            json = JSON.toJSONString(pager, ser, SerializerFeature.WriteNullListAsEmpty);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        endHandle4activiti(request, response, json, "");
+    }
+    /**
+     * 6.
+     * 催办
+     * 返回所有被催办人
+     */
+    @RequestMapping(value = "/workFlowController.do", params = "method=sendMessage")
+    @ResponseBody
+    public ModelAndView  sendMessage(HttpServletRequest request, HttpServletResponse response,
+                               String taskInstanceId) throws AdapterException, UIException {
+        String json = "";
+
+        try {
+            Pager pager = new Pager();
+
+            List<String> telephoneList=new ArrayList<>();
+            
+            //根据任务实例id获取所有候选人
+            List<String> candidates = WorkflowAdapter4Activiti.getCandidates(taskInstanceId);
+            TaskInstance taskInstance = WorkflowAdapter4Activiti.getTaskInstanceObject("", taskInstanceId);
+            String jobCode = taskInstance.getJobCode();
+            //根据所有候选人来获取电话,并发送短信
+            for(String candidate:candidates){
+                try {
+                    UserEntity userEntity = AAAAAdapter.findUserByPortalAccountId(candidate);
+                    if (userEntity!=null){
+                        String telephone = userEntity.getTelephone();
+                        if (telephone!=null&&!"".equals(telephone)){
+                            String message="尊敬的"+userEntity.getTrueName()+":您好!工单编号:"+jobCode+",的待办任务正在催办";
+                            SmsDuanxinServer.duanxinByphone("18611805440",message);
+                            telephoneList.add(userEntity.getUserName());
+                        }
+                    }
+                } catch (PaasAAAAException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            //返回所有已发送短信的用户名
+            pager.setExhibitDatas(telephoneList);
+            pager.setIsSuccess(true);
+            SerializeConfig ser = new SerializeConfig();
+            ser.put(Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+            json = JSON.toJSONString(pager, ser, SerializerFeature.WriteNullListAsEmpty);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        endHandle4activiti(request, response, json, "");
+//        return  "redirect:/base/page/workOrderStart.jsp";
+        return new ModelAndView(new InternalResourceView("base/page/workOrderStart.jsp"));
+    }
+
+    /**
+     * 6.
+     * 获取通用处理信息页面
+     *
+     */
+    @RequestMapping(value = "/workFlowController.do", params = "method=getGeneralInfoPage")
+    @ResponseBody
+    public ModelAndView getGeneralInfoPage(HttpServletRequest request, HttpServletResponse response,
+                               String processInstID) throws AdapterException, UIException {
+        return new ModelAndView(new InternalResourceView("base/page/workOrderMonitor.jsp")).addObject("processInstID",processInstID);
+//        return new ModelAndView(new InternalResourceView("base/page/workOrderStart.jsp")).addObject("processInstID",processInstID);
     }
 
 
@@ -193,6 +332,65 @@ public class WorkFlowController extends BaseController {
                                        String accountId
     ) throws AdapterException, UIException, IOException, ServletException {
         return new ModelAndView(new InternalResourceView("base/page/todo.jsp")).addObject("accountId", accountId);
+    }
+
+
+    /**
+     * 7.
+     * 通过用户id获取发起过的工单
+     */
+    @RequestMapping(value = "/workFlowController.do", params = "method=getWorkOrderStart")
+    @ResponseBody
+    public void getWorkOrderStart(HttpServletRequest request, HttpServletResponse response,
+                                  String accountId
+    ) throws AdapterException, UIException, IOException, ServletException, ServiceException {
+
+        String json = "";
+        List<TaskInstance> taskInstanceList = new ArrayList<>();
+
+        try {
+            //通过用户Id查询userEntity
+            UserEntity userEntity = getUserEntity(request);
+            if (userEntity != null) {
+                accountId = userEntity.getUserName();
+            }
+            try {
+                userEntity = AAAAAdapter.findUserByPortalAccountId(accountId);
+            } catch (PaasAAAAException e) {
+                e.printStackTrace();
+            }
+            //查询所有当前用户的通用处理信息
+            List<GeneralInfoModel> generalInfoByCreatedBy = workflowBaseService.getGeneralInfoByCreatedBy(userEntity.getUserId());
+            //根据通用信息获取所有流程实例id
+            Set<String> processInstIdSet = new LinkedHashSet<>();
+            for (GeneralInfoModel generalInfoModel : generalInfoByCreatedBy) {
+                if (generalInfoModel.getProcessInstId()!=null)
+                    processInstIdSet.add(generalInfoModel.getProcessInstId());
+            }
+            //根据流程实例id获取所有待办
+            for (String processInstId : processInstIdSet) {
+                TaskFilter taskFilter = new TaskFilter();
+                taskFilter.setProcessInstID(processInstId);
+                List<TaskInstance> myWaitingTasks = WorkflowAdapter.getMyWaitingTasks(taskFilter, accountId);
+                if (myWaitingTasks.size() != 0) {
+                    TaskInstance taskInstance=myWaitingTasks.get(0);
+                    taskInstanceList.add(taskInstance);
+                }
+            }
+
+            Pager pager = new Pager();
+            pager.setExhibitDatas(taskInstanceList);
+            pager.setRecordCount(taskInstanceList.size());
+            pager.setIsSuccess(true);
+
+            SerializeConfig ser = new SerializeConfig();
+            ser.put(Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+            ser.put(java.sql.Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+            json = JSON.toJSONString(pager, ser, SerializerFeature.WriteNullListAsEmpty);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        endHandle4activiti(request, response, json, "");
     }
 
 
@@ -357,7 +555,7 @@ public class WorkFlowController extends BaseController {
 //        testList.add("http://10.225.222.200/cform/jsp/cform/tasklist/render/formrender.jsp?formId=XianChangFuWuGuiDang&tenantId=default");
 //        String test=JSON.toJSONString(testList);
 
-        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList", src).addObject("hisActivity", hisActivity);
+        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList", src).addObject("hisActivity", hisActivity).addObject("processInstID",processInstID);
     }
 
     /**
@@ -389,11 +587,12 @@ public class WorkFlowController extends BaseController {
             JSONObject highQueryParameters = gridPager.getJSONObject("highQueryParameters");
             if (highQueryParameters != null) {
                 //流程模板名
-                processModelName = highQueryParameters.getString("lk_processModelName");
+                if (!"".equals(highQueryParameters.getString("lk_processModelName")))
+                    processModelName = highQueryParameters.getString("lk_processModelName");
                 //在时间之前
-                createdBefore = highQueryParameters.getString("ge_jobTitle");
-                //在时间之后
-                createdAfter = highQueryParameters.getString("le_jobTitle");
+//                createdBefore = highQueryParameters.getString("ge_jobTitle");
+//                //在时间之后
+//                createdAfter = highQueryParameters.getString("le_jobTitle");
 //                        //工单编号
 //                        highQueryParameters.getString("lk_");
 //                        //当前节点
@@ -403,7 +602,7 @@ public class WorkFlowController extends BaseController {
 //                        //发起人
 //                        highQueryParameters.getString("lk_strColumn5");
             }
-            System.out.println("control新待办查询:"+dtGridPager);
+            System.out.println("control新待办查询:" + dtGridPager);
         }
         UserEntity userEntity = getUserEntity(request);
         if (userEntity != null)
@@ -512,6 +711,16 @@ public class WorkFlowController extends BaseController {
             List<TaskInstance> taskInstances = WorkflowAdapter.queryNextWorkItemsByProcessInstID(processInstID, accountId);
             TaskInstance taskInstance = taskInstances.get(0);
 
+            //记录通用处理信息
+            //通过用户Id查询userEntity
+            UserEntity userEntity = new UserEntity();
+            try {
+                userEntity = AAAAAdapter.findUserByPortalAccountId(accountId);
+            } catch (PaasAAAAException e) {
+                e.printStackTrace();
+            }
+            GeneralInfoModel generalInfoModel = new GeneralInfoModel();
+            workflowBaseService.saveGeneralInfo(generalInfoModel, taskInstance, userEntity);
 
             //通过任务实例id提交任务,存储表数据
             //下一步的候选人列表
@@ -526,8 +735,24 @@ public class WorkFlowController extends BaseController {
             String s = JSON.toJSONString(participantList);
 
 
-            //提交任务并记录通用处理信息
+            //提交任务
             WorkflowAdapter.submitTask(accountId, taskInstance, participantList, nextStep, tenantId);
+
+            //记录通用处理信息
+            //保存刚刚提交的任务信息
+            TaskInstance taskInstanceComplete = WorkflowAdapter4Activiti.getHistoryTaskInstanceObject(accountId, taskInstance.getTaskInstID());
+            GeneralInfoModel generalInfoModelOld = new GeneralInfoModel();
+            workflowBaseService.saveGeneralInfo(generalInfoModelOld, taskInstanceComplete, userEntity);
+
+            //保存刚刚新获得的任务信息
+            TaskFilter taskFilter = new TaskFilter();
+            taskFilter.setProcessInstID(taskInstanceComplete.getProcessInstID());
+            List<TaskInstance> myWaitingTasks = WorkflowAdapter.getMyWaitingTasks(taskFilter, accountId);
+            if (myWaitingTasks.size() != 0) {
+                GeneralInfoModel generalInfoModelNew = new GeneralInfoModel();
+                workflowBaseService.saveGeneralInfo(generalInfoModelNew, myWaitingTasks.get(0), userEntity);
+            }
+
 
         } catch (Exception e) {
             processInstID = "false";
@@ -740,7 +965,7 @@ public class WorkFlowController extends BaseController {
     /**
      * 4.查询已办
      * 基于同一用户的合并
-     *  我觉得并无大用,和上面的方法重复了,
+     *  todo 我觉得并无大用,和上面的方法重复了,
      *  只不过是可以通过pager传递一个总数量,
      *  过段时间我可以把上面的方法也同样实现出来
      *
@@ -898,11 +1123,37 @@ public class WorkFlowController extends BaseController {
                 participantList.add(participant);
             }
 
+            //通过任务实例ID查询任务实例
+//            TaskInstance taskInstance = WorkflowAdapter.getTaskInstanceObject(accountId, taskInstanceID);
+            //通过用户Id查询userEntity
+            UserEntity userEntity = new UserEntity();
+            try {
+                userEntity = AAAAAdapter.findUserByPortalAccountId(accountId);
+            } catch (PaasAAAAException e) {
+                e.printStackTrace();
+            }
             TaskInstance taskInstance = new TaskInstance();
             taskInstance.setTaskInstID(taskInstanceID);
 
+            //提交待办
 //            WorkflowAdapter.submitTask(accountId, taskInstance, participantList);
             WorkflowAdapter.submitTask(accountId, taskInstance, participantList, nextStep, tenantId);
+
+            //记录通用处理信息
+            //保存刚刚提交的任务信息
+            TaskInstance taskInstanceComplete = WorkflowAdapter4Activiti.getHistoryTaskInstanceObject(accountId, taskInstanceID);
+            GeneralInfoModel generalInfoModel = new GeneralInfoModel();
+            workflowBaseService.saveGeneralInfo(generalInfoModel, taskInstanceComplete, userEntity);
+
+            //保存刚刚新获得的任务信息
+            TaskFilter taskFilter = new TaskFilter();
+            taskFilter.setProcessInstID(taskInstanceComplete.getProcessInstID());
+            List<TaskInstance> myWaitingTasks = WorkflowAdapter.getMyWaitingTasks(taskFilter, accountId);
+            if (myWaitingTasks.size() != 0) {
+                GeneralInfoModel generalInfoModelNew = new GeneralInfoModel();
+                workflowBaseService.saveGeneralInfo(generalInfoModelNew, myWaitingTasks.get(0), userEntity);
+            }
+
         } catch (Exception e) {
             result = "false";
             e.printStackTrace();
@@ -1374,7 +1625,7 @@ public class WorkFlowController extends BaseController {
 
     /**
      * 获取分页信息
-     * 这个方法是工具,目前没有用到,后面如果需要整合就用
+     * todo 这个方法是工具,目前没有用到,后面如果需要整合就用
      */
     private TaskFilter setPageCodition(TaskFilter taskFilter, HttpServletRequest request) {
         String dtGridPager = request.getParameter("dtGridPager");
