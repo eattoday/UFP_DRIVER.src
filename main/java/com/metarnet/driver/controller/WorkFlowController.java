@@ -74,10 +74,14 @@ public class WorkFlowController extends BaseController {
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=test")
     @ResponseBody
-    public void test(HttpServletRequest request, HttpServletResponse response,
-                     String user, String taskInstId
-    ) throws AdapterException, UIException {
-        WorkflowAdapter4Activiti.deleteAssignee(taskInstId, user);
+    public void test(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+
+
+
+
+//        return new ModelAndView(new InternalResourceView("base/page/demoTaskSubmit.jsp")).addObject("srcList", src).addObject("hisActivity", hisActivity).addObject("processInstID", processInstID);
+
     }
 
 
@@ -739,7 +743,13 @@ public class WorkFlowController extends BaseController {
     /**
      * 7.1获取发起过的工单页面
      */
-
+    @RequestMapping(value = "/workFlowController.do", params = "method=getWorkOrderStartPage")
+    @ResponseBody
+    public ModelAndView getWorkOrderStartPage(HttpServletRequest request, HttpServletResponse response,
+                                       String accountId
+    ) throws AdapterException, UIException, IOException, ServletException {
+        return new ModelAndView(new InternalResourceView("base/page/workOrderStart.jsp")).addObject("accountId", accountId);
+    }
 
     /**
      * 8.获取动态表单属性
@@ -1077,17 +1087,17 @@ public class WorkFlowController extends BaseController {
      *
      * @param accountId      用户ID
      * @param taskInstanceId 任务实例ID
-     * @param participantID  转办后执行人ID
+     * @param participantIds  转办后执行人ID
      * @return 反馈结果    true/false
      */
     @RequestMapping(value = "/workFlowController.do", params = "method=forwardTask")
     @ResponseBody
     public void forwardTask(HttpServletRequest request, HttpServletResponse response,
-                            String accountId, String taskInstanceId, String participantID) throws AdapterException, UIException {
+                            String accountId, String taskInstanceId, String participantIds) throws AdapterException, UIException {
         String result = "true";
         try {
             //将转办后执行人ID放入候选人对象集合
-            List<String> participantList = JSONArray.parseArray(participantID, String.class);
+            List<String> participantList = JSONArray.parseArray(participantIds, String.class);
             List<Participant> participants = new ArrayList<>();
             for (String p : participantList) {
                 Participant participant = new Participant();
