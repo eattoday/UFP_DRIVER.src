@@ -132,7 +132,20 @@
         var iframe=document.getElementById("frame");
         iframe.setAttribute("src","<%=list.get(list.size()-1)%>");
         iframe.height = document.documentElement.clientHeight-64;
+//        var iDoc = iframe.contentDocument || iframe.document
+//        var height = calcPageHeight(iDoc)
+//        iframe.setAttribute("height",height);
     }
+
+
+//    function calcPageHeight(doc) {
+//        var cHeight = Math.max(doc.body.clientHeight, doc.documentElement.clientHeight)
+//        var sHeight = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight)
+////        var sHeight = Math.max(doc.body.scrollHeight, doc.documentElement.offsetHeight)
+//        var height  = cHeight+sHeight+doc.documentElement.offsetHeight;
+//
+//        return height
+//    }
 
     window.onload = onload();
 </script>

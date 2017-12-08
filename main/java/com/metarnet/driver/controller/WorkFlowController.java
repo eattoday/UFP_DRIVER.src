@@ -477,6 +477,8 @@ public class WorkFlowController extends BaseController {
         List<String> srcList = new ArrayList<>();
         List<String> hisActivityList = new ArrayList<>();
 
+        //传入其他系统时去掉后缀
+        accountId=accountId.replace("_emos","").replace("_irms","");
         //获取所有的用户表单
 //        Pager pager4Form=new Pager();
 //            pager4Form.setPageSize(1000);
