@@ -32,6 +32,7 @@ import com.metarnet.driver.model.FlowNodeSettingEntity;
 import com.metarnet.driver.model.FlowNodeSettingTmpEntity;
 import com.metarnet.driver.service.IComponentFormService;
 import com.metarnet.driver.service.IFlowNodeSettingService;
+import com.metarnet.workflow.controller.WorkflowController;
 import com.metarnet.workflow.utils.SmsDuanxinServer;
 import com.ucloud.paas.proxy.aaaa.entity.UserEntity;
 import com.ucloud.paas.proxy.aaaa.util.PaasAAAAException;
@@ -110,6 +111,14 @@ public class WorkFlowController extends BaseController {
                              String bizModleParam, String tenantId,
                              String nextStep) throws AdapterException, UIException {
 
+        System.out.println("WorkFlowController 1.启动流程: " +
+                " accountId : " + accountId+
+                ", participants : " + participants+
+                ", processModelParams : " + processModelParams+
+                ", bizModleParam : " + bizModleParam+
+                ", tenantId : " + tenantId+
+                ", nextStep : " + nextStep
+        );
         String processInstID = "";
 
         try {
@@ -222,6 +231,14 @@ public class WorkFlowController extends BaseController {
                            String accountId, String tenantId,
                            String nextStep) throws AdapterException, UIException {
 
+        System.out.println("WorkFlowController 2.提交待办: " +
+                        " accountId : " + accountId+
+                        ", participants : " + participants+
+                        ", taskInstanceID : " + taskInstanceID+
+                        ", tenantId : " + tenantId+
+                        ", nextStep : " + nextStep
+                            );
+
         String result = "true";
 
         try {
@@ -294,6 +311,11 @@ public class WorkFlowController extends BaseController {
                                   String accountId, String startRecord, String pageSize,
                                   String processInstID, String tenantId) throws AdapterException, UIException {
 
+        System.out.println("WorkFlowController 3.旧查询待办: " +
+                " accountId : " + accountId+
+                ", processInstID : " + processInstID+
+                ", tenantId : " + tenantId
+        );
         String json = "";
         String dtGridPager = request.getParameter("dtGridPager");
 
@@ -417,7 +439,7 @@ public class WorkFlowController extends BaseController {
 //                        //发起人
 //                        highQueryParameters.getString("lk_strColumn5");
             }
-            System.out.println("control新待办查询:" + dtGridPager);
+            System.out.println("WorkFlowController 4.新待办查询:" + dtGridPager);
         }
         UserEntity userEntity = getUserEntity(request);
         if (userEntity != null)
@@ -478,7 +500,7 @@ public class WorkFlowController extends BaseController {
         List<String> hisActivityList = new ArrayList<>();
 
         //传入其他系统时去掉后缀
-        accountId=accountId.replace("_emos","").replace("_irms","");
+        accountId=accountId.replace("_eoms","").replace("_irms","");
         //获取所有的用户表单
 //        Pager pager4Form=new Pager();
 //            pager4Form.setPageSize(1000);
@@ -841,6 +863,11 @@ public class WorkFlowController extends BaseController {
     @ResponseBody
     public void getTaskInstanceObject(HttpServletRequest request, HttpServletResponse response,
                                       String accountId, String taskInstId, String tenantId) throws AdapterException, UIException {
+        System.out.println("WorkFlowController 11.获取任务实例对象: " +
+                " accountId : " + accountId+
+                ", taskInstId : " + taskInstId+
+                ", tenantId : " + tenantId
+        );
         String json = "";
         try {
             TaskInstance taskInstanceObject = WorkflowAdapter.getTaskInstanceObject(accountId, taskInstId);
@@ -1042,7 +1069,7 @@ public class WorkFlowController extends BaseController {
     public ModelAndView sendMessage(HttpServletRequest request, HttpServletResponse response,
                                     String taskInstanceId) throws AdapterException, UIException {
         String json = "";
-
+        System.out.println("WorkflowController 19.催办: taskInstanceId : "+taskInstanceId);
         try {
             Pager pager = new Pager();
 
@@ -1060,7 +1087,9 @@ public class WorkFlowController extends BaseController {
                         String telephone = userEntity.getTelephone();
                         if (telephone != null && !"".equals(telephone)) {
                             String message = "尊敬的" + userEntity.getTrueName() + ":您好!工单编号:" + jobCode + ",的待办任务正在催办";
-                            SmsDuanxinServer.duanxinByphone("18611805440", message);
+                            System.out.println("发送前message:"+message);
+                            SmsDuanxinServer.duanxinByphone("13739290575", message);
+                            System.out.println("发送后message:"+message);
                             telephoneList.add(userEntity.getUserName());
                         }
                     }
