@@ -30,7 +30,9 @@ public class SmsDuanxinServer {
 			String smsSystem_id = "lizhidan";
 			String smsPassword = "lizhidan123";
 			if (1==1) {
+				System.out.println("发送前");
 				RmiAdapter rmi = (RmiAdapter) Naming.lookup("rmi://" + smsHost + "/SmsRmiAdapter");
+				System.out.println("发送后"+rmi);
 				String tmp = "<root><username>u###</username><password>p###</password><message><address>a###</address><content>b###</content></message></root>";
 				String msg = returnXmlStr;
 				if (1==1) {
@@ -43,7 +45,9 @@ public class SmsDuanxinServer {
 						tmp = tmp.replaceAll("a###", phone);
 						// 内容
 						tmp = tmp.replaceAll("b###", msg);
+						System.out.println("发送前:"+tmp);
 						rmi.sendSms(tmp);
+						System.out.println("发送后11111");
 					}
 					tmp = "<root><username>u###</username><password>p###</password><message><address>a###</address><content>b###</content></message></root>";
 				}
