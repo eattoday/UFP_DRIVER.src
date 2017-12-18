@@ -6,50 +6,20 @@
 <%@ include file="/base/basePage.jsp" %>
 
 <head>
-    <title>已办查询</title>
-    <%--<meta http-equiv="content-type" content="application/vnd.ms-excel;charset=UTF-8"/>--%>
-    <style>
-
-    </style>
+    <title>测试父页面</title>
+    <script type="text/javascript">
+        function say(){
+            alert("parent.html");
+        }
+        function callChild(){
+            myFrame.window.childSay();
+            myFrame.window.document.getElementById("button").value="调用结束";
+        }
+    </script>
 </head>
 <body>
-<br>
-<br>
-<br>
-<br>
-<br>
-<div >已办查询</div>
-
-<script >
-    $(function () {
-        $.post("http://localhost:9087/UFP_DRIVER/workFlowController.do?method=getMyCompletedTasks",
-            {"accountId":"ght"},function(data){
-                var dataList=data.exhibitDatas;
-                for(i=0;i<dataList.length;i++){
-                    $("#itemu").append(
-                        "<tr>" +
-                        "<td >" +
-                        "<input value='活动名称:" + dataList[i].activityInstName + "'>"+
-                        "</td>" +
-                        "<td >" +
-                        "<input value='流程实例ID:" + dataList[i].processInstID + "'>"+
-                        "</td>" +
-                        "<td >" +
-                        "<input value='流程ID:" + dataList[i].processModelId + "'>"+
-                        "</td>" +
-                        "<td >" +
-                        "<input value='任务ID:" + dataList[i].taskInstID + "'>"+
-                        "</td>" +
-//                        "<td >" +
-//                        "<a href=http://localhost:9087/UFP_DRIVER/workFlowController.do?method=submitTask&participants=['ght']&accountId=ght&taskInstanceID=" + data[i].taskInstID + ">" + "提交任务" + "</a>" +
-//                        "</td>" +
-                        "</tr>");
-                }
-            },"json");
-    })
-</script>
-
-<table> <tr id="itemu"></tr>    </table>
+<input id="button" type="button" value="调用child.html中的函数say()" onclick="callChild()"/>
+<iframe name="myFrame" src="demoTask.jsp"></iframe>
 
 </body>
 </html>

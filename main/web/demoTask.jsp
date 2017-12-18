@@ -3,53 +3,21 @@
 <%@ include file="/base/basePage.jsp" %>
 
 <head>
-    <title>待办查询</title>
-    <%--<meta http-equiv="content-type" content="application/vnd.ms-excel;charset=UTF-8"/>--%>
-    <style>
-
-    </style>
+    <title>测试子页面</title>
+    <script type="text/javascript">
+        function childSay(){
+            alert("child.html");
+        }
+        function callParent(){
+            parent.say();
+            parent.window.document.getElementById("button").value="调用结束";
+        }
+    </script>
 </head>
+11111111
 <body>
-
-<br>
-<br>
-<div>待办查询</div>
-<br>
-<br>
-
-<script>
-    $(function () {
-        $.post("http://localhost:9087/UFP_DRIVER/workFlowController.do?method=getMyWaitingTasks",
-            {"accountId": "root"}, function (data) {
-                var dataList=data.exhibitDatas;
-                for (i = 0; i < dataList.length; i++) {
-                    $("#itemu").append(
-                        "<tr>" +
-                        "<td >" +
-                        "<input value='活动名称:" + dataList[i].activityInstName + "'>" +
-                        "</td>" +
-                        "<td >" +
-                        "<input value='流程实例ID:" + dataList[i].processInstID + "'>" +
-                        "</td>" +
-                        "<td >" +
-                        "<input value='流程ID:" + dataList[i].processModelId + "'>" +
-                        "</td>" +
-                        "<td >" +
-                        "<input value='任务ID:" + dataList[i].taskInstID + "'>" +
-                        "</td>" +
-                        "<td >" +
-                        "<a href=http://localhost:9087/UFP_DRIVER/workFlowController.do?method=getTable&activityDefID=" + dataList[i].activityDefID + "&processModelId=" + dataList[i].processModelId + ">" + "查询表单" + "</a>" +
-                        "</td>" +
-                        "<td >" +
-                        "<a href=http://localhost:9087/UFP_DRIVER/workFlowController.do?method=submitTask&participants=['root']&accountId=root&taskInstanceID=" + dataList[i].taskInstID + ">" + "提交任务" + "</a>" +
-                        "</td>" +
-                        "</tr>");
-                }
-            }, "json");
-    })
-</script>
-
-<table id="itemu"></table>
+<input id="button" type="button" value="调用parent.html中的say()函数" onclick="callParent()"/>
+22222222222
 
 </body>
 </html>
