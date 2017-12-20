@@ -39,13 +39,13 @@
         }, {
             title: '处理人',
             column: 'operUserTrueName',
-            width: '10%'
+            width: '15%'
         }, {
             title: '处理时间',
             column: 'operTime',
             width: '15%',
             wrapFunction: function (record, __data_value) {
-                var da=new Date(record.lastUpdateTime);
+                var da=new Date(record.operTime);
                 var year = da.getFullYear();
                 var month = da.getMonth()+1;
                 var date = da.getDate();
@@ -57,8 +57,17 @@
         }, {
             title: '处理环节',
             column: 'activityInstName',
-            width: '10%'
-        }, {
+            width: '15%',
+            wrapFunction: function (record, __data_value) {
+
+                return '<a style="text-decoration:underline" target="_blank"  href="'
+                    +_PATH + '/workFlowController.do?method=getWaitingDesc' +
+                    '&processInstID=' +record.processInstID+
+                    '&accountId=' +'<%=accountId%>'+
+                    '&taskInstanceId=' + record.taskInstID +
+                    '">' + record.activityInstName + '</a>';
+            }
+        }, /*{
             title: '创建人',
             column: 'createdBy',
             width: '10%'
@@ -67,7 +76,7 @@
             column: 'creationTime',
             width: '15%',
             wrapFunction: function (record, __data_value) {
-                var da=new Date(record.lastUpdateTime);
+                var da=new Date(record.creationTime);
                 var year = da.getFullYear();
                 var month = da.getMonth()+1;
                 var date = da.getDate();
@@ -80,12 +89,12 @@
             title: '最近更新人',
             column: 'lastUpdatedBy',
             width: '10%'
-        }, {
-            title: '最近更新时间',
-            column: 'lastUpdateTime',
+        }, */{
+            title: '创建时间',
+            column: 'creationTime',
             width: '15%',
             wrapFunction: function (record, __data_value) {
-                var da=new Date(record.lastUpdateTime);
+                var da=new Date(record.creationTime);
                 var year = da.getFullYear();
                 var month = da.getMonth()+1;
                 var date = da.getDate();
@@ -95,15 +104,16 @@
                 return [year,month,date].join('-')+" "+[hour,minute,second].join(':');
             }
         }, {
-            title: '是否删除',
-            column: 'deletedFlag',
-            width: '5%',
+            title: '处理时长',
+            column: '',
+            width: '15%',
             wrapFunction: function (record, __data_value) {
-                if (record.deletedFlag==false){
-                    return "否";
-                }else {
-                    return "是";
-                }
+                var time=Math.floor(-(record.operTime-record.creationTime)/1000);
+                var second=Math.floor(time%60);
+                var minute=Math.floor(time/60%60);
+                var hour=Math.floor(time/60/60%24);
+                var day=Math.floor(time/60/60/24);
+                return day+'天'+hour+'时'+minute+'分'+second+'秒';
             }
         }
         ]

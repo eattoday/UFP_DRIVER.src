@@ -40,7 +40,7 @@
             width: '16%',
             wrapFunction: function (record, __data_value) {
                 return '<a style="text-decoration:underline"  href="'
-                    +_PATH + '/workFlowController.do?method=getWaitingDesc' +
+                    +_PATH + '/workFlowController.do?method=getWaitingTaskDesc' +
                     '&processInstID=' +record.processInstID+
                     '&accountId=' +'<%=accountId%>'+
                     '&taskInstanceId=' + record.taskInstID +

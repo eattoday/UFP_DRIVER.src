@@ -11,11 +11,21 @@
 <link rel="stylesheet" type="text/css" href="<%=path%>/base/_css/bootstrap.css"/>
 <head>
     <title >任务详情</title>
+    <script type="text/javascript">
+        function say(){
+            alert("parent.html");
+        }
+        function callChild(){
+            myFrame.window.childSay();
+            myFrame.window.document.getElementById("button").value="调用结束";
+        }
+    </script>
 </head>
 <body >
 
 <%
     String srcList =(String) request.getAttribute("srcList");
+    String accountId =(String) request.getAttribute("accountId");
     String hisActivity =(String) request.getAttribute("hisActivity");
     String processInstID =(String) request.getAttribute("processInstID");
     List<String> list=JSONObject.parseObject(srcList, List.class);
@@ -71,13 +81,19 @@
 %>
     </div>
 
-    <iframe  id="frame" width="100%" scrolling="0" frameborder="0"  marginheight="0"
-             style="display: table;box-sizing: border-box" ></iframe>
+<input id="return2Todo" type="hidden" value="回待办" onclick="return2Todo()"/>
+<%--<iframe  width="100%" height="500px" src="http://localhost:9087/UFP_DRIVER/base/page/frame_son.jsp" scrolling="0" frameborder="10" ></iframe>--%>
+
+<iframe  id="frame" width="100%" scrolling="0" frameborder="0"  marginheight="0"
+style="display: table;box-sizing: border-box" ></iframe>
+
+
 
 <script>
-
     function return2Todo() {
-        window.location.href="<%=path%>/base/page/todo.jsp";
+//        alert('11111')
+        window.location.href="http://10.225.222.203:8083/UFP_DRIVER/workFlowController.do?method=getWaitingList&accountId=<%=accountId%>";
+        <%--window.location.href="http://localhost:9087/UFP_DRIVER/workFlowController.do?method=getWaitingList&accountId=<%=accountId%>";--%>
     }
     function button0() {
         document.getElementById("now").setAttribute("class","");
