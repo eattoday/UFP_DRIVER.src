@@ -1,0 +1,50 @@
+#parse("/common/global_library.vm")
+#@layout("流程图" ["bpmn_js"] [] [])
+<div id="diagram"></div>
+<style>
+    html, body, #diagram {
+        height: 100%;
+        margin: 0;
+    }
+
+    .bjs-powered-by {
+        display: none;
+    }
+
+    .highlight.djs-shape .djs-visual > :nth-child(1) {
+        fill: red !important;
+    }
+
+    .highlight.djs-connection .djs-visual > :nth-child(1) {
+        stroke: red !important;
+        marker-end: url("#sequenceflow-end-highlight") !important;
+    }
+
+    #sequenceflow-end-highlight > :nth-child(1) {
+        fill: red !important;
+        stroke: red !important;
+    }
+</style>
+<!--suppress ALL -->
+<script>
+    $(function () {
+        var viewer = new BpmnJS({container: '#diagram'});
+        var mapVariables = $mapVariables;
+        viewer.importXML(mapVariables['process_bpmnXML.xml'], function () {
+            var overlays = viewer.get('overlays'), canvas = viewer.get('canvas'), elementRegistry = viewer.get('elementRegistry');
+            canvas.zoom('fit-viewport', true);
+
+            var highLightedActivities = mapVariables['highLightedActivities']
+            for (var i = 0; i < highLightedActivities.length; i++) {
+                canvas.addMarker(highLightedActivities[i], 'highlight');
+            }
+            var highLightedFlows = mapVariables['highLightedFlows']
+            for (var i = 0; i < highLightedFlows.length; i++) {
+                canvas.addMarker(highLightedFlows[i], 'highlight');
+            }
+
+            $('#sequenceflow-end-white-black').clone().attr('id', 'sequenceflow-end-highlight').insertBefore('#sequenceflow-end-white-black');
+        });
+    });
+</script>
+#end
