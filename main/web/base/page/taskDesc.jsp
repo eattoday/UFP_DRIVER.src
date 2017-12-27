@@ -196,16 +196,20 @@ src="<%=list.get(0)%>">
                         button.click(function(){
                             //设置为新窗口打开按钮配置的页面
                             var triggerURL=response.triggerURL;
-                            triggerURL= triggerURL.replace("{userName}", "<%=accountId%>");
-                            triggerURL= triggerURL.replace("{taskInstanceId}", "<%=taskInstanceId%>");
-                            triggerURL= triggerURL.replace("{processInstID}", "<%=processInstID%>");
                             triggerURL= triggerURL.replace("{userName}", "<%=accountId2System%>");
+                            triggerURL= triggerURL.replace("{userName}", "<%=accountId2System%>");
+                            triggerURL= triggerURL.replace("{taskInstanceId}", "<%=taskInstanceId%>");
+                            triggerURL= triggerURL.replace("{taskInstanceID}", "<%=taskInstanceId%>");
+                            triggerURL= triggerURL.replace("{processInstID}", "<%=processInstID%>");
+                            console.log('按钮配置的地址为: '+triggerURL);
                             window.open(triggerURL);
                         });
                     }
                 }
             },
-            error: function(){ }
+            error: function(){
+                console.log('请求失败');
+            }
         })
     }
 </script>
