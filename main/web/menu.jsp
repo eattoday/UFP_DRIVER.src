@@ -2,6 +2,9 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <html>
 <head>
+    <title>
+        流程平台
+    </title>
     <link rel="stylesheet" type="text/css" href="component/jquery.dtGrid.v1.1.9/dependents/bootstrap/css/bootstrap.min.css"/>
     <link rel="stylesheet" type="text/css" href="base/_css/menu.css"/>
     <style>
@@ -24,7 +27,8 @@
                     <li><a href="base/page/workFlowMonitor.jsp" target="__menu_body" >流程监控页面</a></li>
                     <li><a href="base/page/workOrderMonitor.jsp" target="__menu_body" >我的流程监控页面</a></li>
                     <li><a href="base/page/workOrderStart.jsp" target="__menu_body" >已发起工单查询</a></li>
-                    <li><a href="demoCompleteTask.jsp"  >父页面演示</a></li>
+                    <li><a href="base/diagram.vm"  >流程图展示</a></li>
+
                     <li><a href="base/page/already_old.jsp" target="__menu_body">已办</a></li>
                     <li><a href="base/page/already.jsp" target="__menu_body">已办xin</a></li>
                     <li><a href="base/page/flowButtonList.jsp" target="__menu_body">按钮列表</a></li>

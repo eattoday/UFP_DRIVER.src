@@ -49,7 +49,9 @@ style="display: table;box-sizing: border-box"
 src="<%=list.get(0)%>">
 </iframe>
 
-<div style="height:45px;"></div>
+<div >
+    <h1><small>&nbsp;&nbsp;环节信息</small></h1>
+</div>
 
 <div style="width: 99% ; margin: auto"   >
 <table class="table table-hover table-striped" style="margin-top: 5px;">
@@ -160,7 +162,8 @@ src="<%=list.get(0)%>">
         <%--window.location.href="http://http://10.225.222.203:8083/UFP_DRIVER/workFlowController.do?method=getWaitingList&accountId=<%=accountId%>";--%>
     }
     function onload() {
-        document.getElementById("frame_first").setAttribute("height",document.documentElement.clientHeight-45);
+        document.getElementById("frame_first").setAttribute("height",document.documentElement.clientHeight-100);
+//        document.getElementById("frame_first").setAttribute("height",document.documentElement.clientHeight-45);
         <%
             if(btnIDList!=null){
                 for(int i=0;i<btnIDList.size();i++){
